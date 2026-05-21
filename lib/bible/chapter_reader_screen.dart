@@ -135,6 +135,9 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
   String _translationId = 'kjv';
   bool _recordedProgress = false;
 
+  /// Shown immediately after save until Firestore snapshot catches up.
+  ChapterAnnotations _optimistic = ChapterAnnotations.empty;
+
   @override
   void initState() {
     super.initState();
@@ -296,6 +299,88 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
     }
   }
 
+  ChapterAnnotations _mergeAnnotations(ChapterAnnotations server) {
+    if (_optimistic.highlightColorByVerse.isEmpty &&
+        _optimistic.notesByVerse.isEmpty &&
+        _optimistic.bookmarkedVerses.isEmpty) {
+      return server;
+    }
+    final highlights = Map<int, int>.from(server.highlightColorByVerse);
+    highlights.addAll(_optimistic.highlightColorByVerse);
+
+    final notes = <int, List<VerseNote>>{};
+    for (final e in server.notesByVerse.entries) {
+      notes[e.key] = List<VerseNote>.from(e.value);
+    }
+    for (final e in _optimistic.notesByVerse.entries) {
+      final existing = notes[e.key] ?? [];
+      final ids = existing.map((n) => n.id).toSet();
+      final merged = [
+        ...e.value.where((n) => !ids.contains(n.id)),
+        ...existing,
+      ];
+      merged.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      notes[e.key] = merged;
+    }
+
+    final bookmarks = Set<int>.from(server.bookmarkedVerses)
+      ..addAll(_optimistic.bookmarkedVerses);
+
+    return ChapterAnnotations(
+      highlightColorByVerse: highlights,
+      notesByVerse: notes,
+      bookmarkedVerses: bookmarks,
+    );
+  }
+
+  void _pruneOptimistic(ChapterAnnotations server) {
+    final hi = Map<int, int>.from(_optimistic.highlightColorByVerse);
+    for (final e in server.highlightColorByVerse.entries) {
+      if (hi[e.key] == e.value) hi.remove(e.key);
+    }
+
+    final notes = Map<int, List<VerseNote>>.from(_optimistic.notesByVerse);
+    for (final verse in server.notesByVerse.keys) {
+      if (notes.containsKey(verse) && (server.notesByVerse[verse]?.isNotEmpty ?? false)) {
+        notes.remove(verse);
+      }
+    }
+
+    final bookmarks = Set<int>.from(_optimistic.bookmarkedVerses)
+      ..removeAll(server.bookmarkedVerses);
+
+    final next = ChapterAnnotations(
+      highlightColorByVerse: hi,
+      notesByVerse: notes,
+      bookmarkedVerses: bookmarks,
+    );
+    if (next.highlightColorByVerse.isEmpty &&
+        next.notesByVerse.isEmpty &&
+        next.bookmarkedVerses.isEmpty) {
+      if (_optimistic.highlightColorByVerse.isNotEmpty ||
+          _optimistic.notesByVerse.isNotEmpty ||
+          _optimistic.bookmarkedVerses.isNotEmpty) {
+        setState(() => _optimistic = ChapterAnnotations.empty);
+      }
+    } else if (next != _optimistic) {
+      setState(() => _optimistic = next);
+    }
+  }
+
+  void _showSaveError(Object e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          e is StateError
+              ? e.message
+              : 'Could not save. Check you are signed in and online.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<void> _verseAction(
     String action,
     int verseNum,
@@ -313,13 +398,30 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
       case 'Highlight':
         final picked = await showHighlightColorPicker(context);
         if (picked == null || !mounted) return;
-        await repo.setHighlight(
-          book: book,
-          chapter: chapter,
-          verse: verseNum,
-          translationId: tid,
-          colorIndex: picked,
-        );
+        setState(() {
+          _optimistic = _optimistic.copyWith(
+            highlightColorByVerse: {
+              ..._optimistic.highlightColorByVerse,
+              verseNum: picked,
+            },
+          );
+        });
+        try {
+          await repo.setHighlight(
+            book: book,
+            chapter: chapter,
+            verse: verseNum,
+            translationId: tid,
+            colorIndex: picked,
+          );
+        } catch (e) {
+          setState(() {
+            final hi = Map<int, int>.from(_optimistic.highlightColorByVerse);
+            hi.remove(verseNum);
+            _optimistic = _optimistic.copyWith(highlightColorByVerse: hi);
+          });
+          _showSaveError(e);
+        }
       case 'Note':
         if (ann.hasNotes(verseNum)) {
           await _openVerseNotes(verseNum, ann);
@@ -328,20 +430,42 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
         }
       case 'Bookmark':
         final was = ann.isBookmarked(verseNum);
-        await repo.toggleBookmark(
-          book: book,
-          chapter: chapter,
-          verse: verseNum,
-          translationId: tid,
-          bookmarked: was,
-        );
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(was ? 'Bookmark removed' : 'Verse bookmarked'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        setState(() {
+          final marks = Set<int>.from(_optimistic.bookmarkedVerses);
+          if (was) {
+            marks.remove(verseNum);
+          } else {
+            marks.add(verseNum);
+          }
+          _optimistic = _optimistic.copyWith(bookmarkedVerses: marks);
+        });
+        try {
+          await repo.toggleBookmark(
+            book: book,
+            chapter: chapter,
+            verse: verseNum,
+            translationId: tid,
+            bookmarked: was,
+          );
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(was ? 'Bookmark removed' : 'Verse bookmarked'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } catch (e) {
+          setState(() {
+            final marks = Set<int>.from(_optimistic.bookmarkedVerses);
+            if (was) {
+              marks.add(verseNum);
+            } else {
+              marks.remove(verseNum);
+            }
+            _optimistic = _optimistic.copyWith(bookmarkedVerses: marks);
+          });
+          _showSaveError(e);
+        }
       default:
         break;
     }
@@ -354,15 +478,55 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
       initialDraft: existing?.isDraft ?? false,
     );
     if (result == null || !mounted) return;
-    await VerseAnnotationsRepository.instance.saveNote(
-      book: widget.bookDisplayName,
-      chapter: widget.chapter,
-      verse: verseNum,
-      translationId: _translationId,
+
+    final tempId = existing?.id ?? 'local-${DateTime.now().microsecondsSinceEpoch}';
+    final optimisticNote = VerseNote(
+      id: tempId,
       text: result.text,
       isDraft: result.isDraft,
-      noteId: existing?.id,
+      updatedAt: DateTime.now(),
     );
+    setState(() {
+      final notes = Map<int, List<VerseNote>>.from(_optimistic.notesByVerse);
+      if (existing != null) {
+        final list = List<VerseNote>.from(notes[verseNum] ?? []);
+        final i = list.indexWhere((n) => n.id == existing.id);
+        if (i >= 0) {
+          list[i] = optimisticNote;
+        } else {
+          list.insert(0, optimisticNote);
+        }
+        notes[verseNum] = list;
+      } else {
+        notes[verseNum] = [optimisticNote, ...(notes[verseNum] ?? [])];
+      }
+      _optimistic = _optimistic.copyWith(notesByVerse: notes);
+    });
+
+    try {
+      await VerseAnnotationsRepository.instance.saveNote(
+        book: widget.bookDisplayName,
+        chapter: widget.chapter,
+        verse: verseNum,
+        translationId: _translationId,
+        text: result.text,
+        isDraft: result.isDraft,
+        noteId: existing?.id,
+      );
+    } catch (e) {
+      setState(() {
+        final notes = Map<int, List<VerseNote>>.from(_optimistic.notesByVerse);
+        final list = List<VerseNote>.from(notes[verseNum] ?? [])
+          ..removeWhere((n) => n.id == tempId);
+        if (list.isEmpty) {
+          notes.remove(verseNum);
+        } else {
+          notes[verseNum] = list;
+        }
+        _optimistic = _optimistic.copyWith(notesByVerse: notes);
+      });
+      _showSaveError(e);
+    }
   }
 
   Future<void> _openVerseNotes(int verseNum, ChapterAnnotations ann) async {
@@ -433,7 +597,9 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
               translationId: _translationId,
             ),
             builder: (context, annSnap) {
-              final ann = annSnap.data ?? ChapterAnnotations.empty;
+              final server = annSnap.data ?? ChapterAnnotations.empty;
+              _pruneOptimistic(server);
+              final ann = _mergeAnnotations(server);
               return Column(
                 children: [
                   Expanded(

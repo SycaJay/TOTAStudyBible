@@ -687,7 +687,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     await _catalogFuture;
   }
 
-  Future<void> _openStudioUrl(BuildContext context, String raw) async {
+  bool _studioItemIsVideo(String url) {
+    final u = url.toLowerCase();
+    return u.endsWith('.mp4') ||
+        u.endsWith('.webm') ||
+        u.endsWith('.m4v') ||
+        u.contains('.mp4?');
+  }
+
+  Future<void> _playStudioItem(BuildContext context, String raw) async {
     final uri = Uri.tryParse(raw.trim());
     if (uri == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -765,20 +773,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             final catalog = data.catalog;
             final err = data.error;
 
-            if (err != null) {
+            if (catalog.items.isEmpty) {
               return _GlassCard(
                 child: Text(
-                  "We couldn’t load studio media. Check your internet connection "
-                  'and tap refresh.',
-                  style: TextStyle(height: 1.5, color: AppColors.inkMuted),
-                ),
-              );
-            }
-            if (catalog.videos.isEmpty && catalog.audio.isEmpty) {
-              return _GlassCard(
-                child: Text(
-                  'Video and audio from Pastor Elliot Digital Studio load here when '
-                  "you’re online and the catalog is available. Tap refresh after you’re connected.",
+                  err ??
+                      'Connect to the internet and tap refresh to load sermons '
+                      'from Pastor Elliot Digital Studio.',
                   style: TextStyle(height: 1.5, color: AppColors.inkMuted),
                 ),
               );
@@ -787,43 +787,34 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _SectionTitle('Videos'),
-                const SizedBox(height: 10),
-                if (catalog.videos.isEmpty)
-                  const _GlassCard(
+                if (err != null) ...[
+                  _GlassCard(
                     child: Text(
-                      'No videos to show yet.',
-                      style: TextStyle(height: 1.45),
+                      err,
+                      style: TextStyle(
+                        height: 1.45,
+                        fontSize: 13,
+                        color: AppColors.inkSoft,
+                      ),
                     ),
-                  )
-                else
-                  for (final v in catalog.videos) ...[
-                    _StudioMediaCard(
-                      title: v.title,
-                      icon: Icons.play_circle_outline_rounded,
-                      onTap: () => _openStudioUrl(context, v.url),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                const SizedBox(height: 8),
-                const _SectionTitle('Audio'),
-                const SizedBox(height: 10),
-                if (catalog.audio.isEmpty)
-                  const _GlassCard(
-                    child: Text(
-                      'No audio to show yet.',
-                      style: TextStyle(height: 1.45),
-                    ),
-                  )
-                else
-                  for (final a in catalog.audio) ...[
-                    _StudioMediaCard(
-                      title: a.title,
-                      icon: Icons.graphic_eq_rounded,
-                      onTap: () => _openStudioUrl(context, a.url),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                Text(
+                  'Loaded live from gloriousvisionstvplus.com',
+                  style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
+                ),
+                const SizedBox(height: 12),
+                for (final item in catalog.items) ...[
+                  _StudioMediaCard(
+                    title: item.title,
+                    icon: _studioItemIsVideo(item.url)
+                        ? Icons.play_circle_outline_rounded
+                        : Icons.headphones_rounded,
+                    onTap: () => _playStudioItem(context, item.url),
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ],
             );
           },

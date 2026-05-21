@@ -1,14 +1,8 @@
-/// Public JSON URL for **Pastor Elliot Digital Studio** (Discover tab), optional.
-/// If this is empty, the app loads the same shape from Firestore `studio/catalog`
-/// (see `StudioCatalogRepository`). You can also pass `--dart-define=STUDIO_CATALOG_URL=...`.
-///
-/// When set, response body must be JSON:
-/// ```json
-/// {
-///   "videos": [{ "title": "...", "url": "https://..." }],
-///   "audio": [{ "title": "...", "url": "https://..." }]
-/// }
-/// ```
-///
-/// Podcasts and sermon MP3s go under `audio`; video pages or YouTube links under `videos`.
+/// Pastor Elliot Digital Studio — [kPastorElliotStudioPageUrl] (parsed in app).
+const String kPastorElliotStudioPageUrl =
+    'https://gloriousvisionstvplus.com/view/studio.php';
+
+/// Optional JSON catalog URL (overrides page parse when set).
+/// Same shape as bundled `assets/content/pastor_elliot_studio.json`:
+/// `{ "items": [{ "title": "...", "url": "https://..." }] }`
 const String kPastorElliotStudioCatalogUrl = '';

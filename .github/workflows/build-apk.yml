@@ -1,0 +1,79 @@
+name: Build and Deploy APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Restore Firebase and local config from secrets
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          BIBLE_ASSETS_BASE64: ${{ secrets.BIBLE_ASSETS_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GOOGLE_SERVICES_JSON:-}" ] || [ -z "${FIREBASE_OPTIONS_DART:-}" ]; then
+            echo "::error::Add GOOGLE_SERVICES_JSON and FIREBASE_OPTIONS_DART in Repo → Settings → Secrets → Actions"
+            exit 1
+          fi
+
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+          cp lib/bible/api_bible_local_key.example.dart lib/bible/api_bible_local_key.dart
+
+          if [ -n "${BIBLE_ASSETS_BASE64:-}" ]; then
+            echo "$BIBLE_ASSETS_BASE64" | base64 -d > bible-assets.zip
+            unzip -q -o bible-assets.zip -d .
+            rm bible-assets.zip
+          else
+            echo "BIBLE_ASSETS_BASE64 not set — using minimal stub Bible JSON so the build can complete."
+            for id in kjv niv nkjv asv darby ylt webster geneva1599 douay1895 rv1895 web wmb; do
+              mkdir -p "assets/bible/$id"
+              printf '%s\n' '{"book":"Genesis","chapters":[{"chapter":"1","verses":[{"verse":"1","text":"In the beginning God created the heaven and the earth."}]}]}' \
+                > "assets/bible/$id/Genesis.json"
+            done
+          fi
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload APK to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: build/app/outputs/flutter-apk/
+          server-dir: public_html/
+          dangerous-clean-slate: false

@@ -86,6 +86,7 @@ flutter:
     - assets/content/daily_feed_fallback.json
     - assets/content/daily_calendar.json
     - assets/content/discover_devotional.json
+    - assets/content/pastor_elliot_studio.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

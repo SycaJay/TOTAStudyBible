@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 
 class VerseNote {
   const VerseNote({
@@ -45,6 +46,18 @@ class ChapterAnnotations {
   bool hasNotes(int verse) => (notesByVerse[verse]?.isNotEmpty ?? false);
 
   bool isBookmarked(int verse) => bookmarkedVerses.contains(verse);
+
+  ChapterAnnotations copyWith({
+    Map<int, int>? highlightColorByVerse,
+    Map<int, List<VerseNote>>? notesByVerse,
+    Set<int>? bookmarkedVerses,
+  }) {
+    return ChapterAnnotations(
+      highlightColorByVerse: highlightColorByVerse ?? this.highlightColorByVerse,
+      notesByVerse: notesByVerse ?? this.notesByVerse,
+      bookmarkedVerses: bookmarkedVerses ?? this.bookmarkedVerses,
+    );
+  }
 }
 
 /// Firestore: users/{uid}/highlights|notes|bookmarks
@@ -54,13 +67,13 @@ class VerseAnnotationsRepository {
       VerseAnnotationsRepository._();
 
   static const highlightColors = <int>[
-    0xFFFFF59D, // yellow
-    0xFFC8E6C9, // green
-    0xFFBBDEFB, // blue
-    0xFFF8BBD0, // pink
-    0xFFFFE0B2, // orange
-    0xFFE1BEE7, // purple
-    0xFFB2DFDB, // teal
+    0xFFFFF59D,
+    0xFFC8E6C9,
+    0xFFBBDEFB,
+    0xFFF8BBD0,
+    0xFFFFE0B2,
+    0xFFE1BEE7,
+    0xFFB2DFDB,
   ];
 
   bool get _ready => Firebase.apps.isNotEmpty;
@@ -87,18 +100,76 @@ class VerseAnnotationsRepository {
         .collection(name);
   }
 
-  Query<Map<String, dynamic>>? _chapterQuery(
-    CollectionReference<Map<String, dynamic>> col, {
+  static int? _asInt(dynamic v) {
+    if (v is int) return v;
+    if (v is num) return v.round();
+    return null;
+  }
+
+  static bool _matchesChapter(
+    Map<String, dynamic> d, {
     required String book,
     required int chapter,
     required String translationId,
   }) {
-    return col
-        .where('book', isEqualTo: book)
-        .where('chapter', isEqualTo: chapter)
-        .where('translationId', isEqualTo: translationId);
+    return d['book'] == book &&
+        _asInt(d['chapter']) == chapter &&
+        d['translationId'] == translationId;
   }
 
+  static ChapterAnnotations _buildFromSnapshots({
+    required String book,
+    required int chapter,
+    required String translationId,
+    required QuerySnapshot<Map<String, dynamic>>? highlights,
+    required QuerySnapshot<Map<String, dynamic>>? notes,
+    required QuerySnapshot<Map<String, dynamic>>? bookmarks,
+  }) {
+    final highlightColorByVerse = <int, int>{};
+    for (final doc in highlights?.docs ?? const []) {
+      final d = doc.data();
+      if (!_matchesChapter(d, book: book, chapter: chapter, translationId: translationId)) {
+        continue;
+      }
+      final v = _asInt(d['verse']);
+      final c = _asInt(d['colorIndex']);
+      if (v != null && c != null && c >= 0 && c < highlightColors.length) {
+        highlightColorByVerse[v] = c;
+      }
+    }
+
+    final notesByVerse = <int, List<VerseNote>>{};
+    for (final doc in notes?.docs ?? const []) {
+      final d = doc.data();
+      if (!_matchesChapter(d, book: book, chapter: chapter, translationId: translationId)) {
+        continue;
+      }
+      final v = _asInt(d['verse']);
+      if (v == null) continue;
+      notesByVerse.putIfAbsent(v, () => []).add(VerseNote.fromDoc(doc));
+    }
+    for (final list in notesByVerse.values) {
+      list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    }
+
+    final bookmarkedVerses = <int>{};
+    for (final doc in bookmarks?.docs ?? const []) {
+      final d = doc.data();
+      if (!_matchesChapter(d, book: book, chapter: chapter, translationId: translationId)) {
+        continue;
+      }
+      final v = _asInt(d['verse']);
+      if (v != null) bookmarkedVerses.add(v);
+    }
+
+    return ChapterAnnotations(
+      highlightColorByVerse: highlightColorByVerse,
+      notesByVerse: notesByVerse,
+      bookmarkedVerses: bookmarkedVerses,
+    );
+  }
+
+  /// Live updates for one chapter (full subcollection listeners, no compound index).
   Stream<ChapterAnnotations> watchChapter({
     required String book,
     required int chapter,
@@ -111,66 +182,60 @@ class VerseAnnotationsRepository {
       return Stream.value(ChapterAnnotations.empty);
     }
 
-    final hQ = _chapterQuery(highlights, book: book, chapter: chapter, translationId: translationId)!;
-    final nQ = _chapterQuery(notes, book: book, chapter: chapter, translationId: translationId)!;
-    final bQ = _chapterQuery(bookmarks, book: book, chapter: chapter, translationId: translationId)!;
-
     final controller = StreamController<ChapterAnnotations>();
     QuerySnapshot<Map<String, dynamic>>? hSnap;
     QuerySnapshot<Map<String, dynamic>>? nSnap;
     QuerySnapshot<Map<String, dynamic>>? bSnap;
 
     void emit() {
-      if (hSnap == null || nSnap == null || bSnap == null) return;
-      final highlightColorByVerse = <int, int>{};
-      for (final doc in hSnap!.docs) {
-        final d = doc.data();
-        final v = d['verse'];
-        final c = d['colorIndex'];
-        if (v is int && c is int && c >= 0 && c < highlightColors.length) {
-          highlightColorByVerse[v] = c;
-        }
-      }
-
-      final notesByVerse = <int, List<VerseNote>>{};
-      for (final doc in nSnap!.docs) {
-        final d = doc.data();
-        final v = d['verse'];
-        if (v is! int) continue;
-        notesByVerse.putIfAbsent(v, () => []).add(VerseNote.fromDoc(doc));
-      }
-      for (final list in notesByVerse.values) {
-        list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      }
-
-      final bookmarkedVerses = <int>{};
-      for (final doc in bSnap!.docs) {
-        final v = doc.data()['verse'];
-        if (v is int) bookmarkedVerses.add(v);
-      }
-
       controller.add(
-        ChapterAnnotations(
-          highlightColorByVerse: highlightColorByVerse,
-          notesByVerse: notesByVerse,
-          bookmarkedVerses: bookmarkedVerses,
+        _buildFromSnapshots(
+          book: book,
+          chapter: chapter,
+          translationId: translationId,
+          highlights: hSnap,
+          notes: nSnap,
+          bookmarks: bSnap,
         ),
       );
     }
 
+    controller.onListen = () => emit();
+
     final subs = <StreamSubscription<QuerySnapshot<Map<String, dynamic>>>>[
-      hQ.snapshots().listen((s) {
-        hSnap = s;
-        emit();
-      }),
-      nQ.snapshots().listen((s) {
-        nSnap = s;
-        emit();
-      }),
-      bQ.snapshots().listen((s) {
-        bSnap = s;
-        emit();
-      }),
+      highlights.snapshots().listen(
+        (s) {
+          hSnap = s;
+          emit();
+        },
+        onError: (e) {
+          if (kDebugMode) debugPrint('highlights stream: $e');
+          hSnap = null;
+          emit();
+        },
+      ),
+      notes.snapshots().listen(
+        (s) {
+          nSnap = s;
+          emit();
+        },
+        onError: (e) {
+          if (kDebugMode) debugPrint('notes stream: $e');
+          nSnap = null;
+          emit();
+        },
+      ),
+      bookmarks.snapshots().listen(
+        (s) {
+          bSnap = s;
+          emit();
+        },
+        onError: (e) {
+          if (kDebugMode) debugPrint('bookmarks stream: $e');
+          bSnap = null;
+          emit();
+        },
+      ),
     ];
 
     controller.onCancel = () async {
@@ -190,7 +255,9 @@ class VerseAnnotationsRepository {
     required int colorIndex,
   }) async {
     final col = _col('highlights');
-    if (col == null) return;
+    if (col == null) {
+      throw StateError('Sign in required to save highlights.');
+    }
     final id = _verseDocId(
       translationId: translationId,
       book: book,
@@ -232,7 +299,9 @@ class VerseAnnotationsRepository {
     required bool bookmarked,
   }) async {
     final col = _col('bookmarks');
-    if (col == null) return;
+    if (col == null) {
+      throw StateError('Sign in required to save bookmarks.');
+    }
     final id = _verseDocId(
       translationId: translationId,
       book: book,
@@ -262,7 +331,9 @@ class VerseAnnotationsRepository {
     String? noteId,
   }) async {
     final col = _col('notes');
-    if (col == null) return '';
+    if (col == null) {
+      throw StateError('Sign in required to save notes.');
+    }
     final ref = noteId != null ? col.doc(noteId) : col.doc();
     await ref.set({
       'book': book,
