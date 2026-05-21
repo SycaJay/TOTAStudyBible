@@ -1,0 +1,482 @@
+[
+  {
+    "name": "ACV.json",
+    "path": "formats/json/ACV.json",
+    "sha": "dd153bebddde85c575df3d8f6aed65b63d7adc0a",
+    "size": 8343074,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/ACV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/ACV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/dd153bebddde85c575df3d8f6aed65b63d7adc0a",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/ACV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/ACV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/dd153bebddde85c575df3d8f6aed65b63d7adc0a",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/ACV.json"
+    }
+  },
+  {
+    "name": "ASV.json",
+    "path": "formats/json/ASV.json",
+    "sha": "16813f9098ec47b15f318b32c876f30ce1eb48cb",
+    "size": 8427944,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/ASV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/ASV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/16813f9098ec47b15f318b32c876f30ce1eb48cb",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/ASV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/ASV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/16813f9098ec47b15f318b32c876f30ce1eb48cb",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/ASV.json"
+    }
+  },
+  {
+    "name": "BBE.json",
+    "path": "formats/json/BBE.json",
+    "sha": "9f82bbd4cbe474654f7d8cfcab4d792c9d9773e9",
+    "size": 8420051,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/BBE.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/BBE.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/9f82bbd4cbe474654f7d8cfcab4d792c9d9773e9",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/BBE.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/BBE.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/9f82bbd4cbe474654f7d8cfcab4d792c9d9773e9",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/BBE.json"
+    }
+  },
+  {
+    "name": "BSB.json",
+    "path": "formats/json/BSB.json",
+    "sha": "f781348dc5f0cd49154105c2e5cdb10af4dae9ce",
+    "size": 8173364,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/BSB.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/BSB.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/f781348dc5f0cd49154105c2e5cdb10af4dae9ce",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/BSB.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/BSB.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/f781348dc5f0cd49154105c2e5cdb10af4dae9ce",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/BSB.json"
+    }
+  },
+  {
+    "name": "CPDV.json",
+    "path": "formats/json/CPDV.json",
+    "sha": "b94b1b285a8fef8452465bd8fcd91dfa8e6f51ee",
+    "size": 10065407,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/CPDV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/CPDV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/b94b1b285a8fef8452465bd8fcd91dfa8e6f51ee",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/CPDV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/CPDV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/b94b1b285a8fef8452465bd8fcd91dfa8e6f51ee",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/CPDV.json"
+    }
+  },
+  {
+    "name": "DRC.json",
+    "path": "formats/json/DRC.json",
+    "sha": "d786cd19b70d4f4a781d3b0080ae36fd5a214898",
+    "size": 9731434,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/DRC.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/DRC.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/d786cd19b70d4f4a781d3b0080ae36fd5a214898",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/DRC.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/DRC.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/d786cd19b70d4f4a781d3b0080ae36fd5a214898",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/DRC.json"
+    }
+  },
+  {
+    "name": "Darby.json",
+    "path": "formats/json/Darby.json",
+    "sha": "5352d33a14f1a34a91eb11cb37e1b42b8493268e",
+    "size": 8384778,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Darby.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Darby.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/5352d33a14f1a34a91eb11cb37e1b42b8493268e",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Darby.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Darby.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/5352d33a14f1a34a91eb11cb37e1b42b8493268e",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Darby.json"
+    }
+  },
+  {
+    "name": "Geneva1599.json",
+    "path": "formats/json/Geneva1599.json",
+    "sha": "9873608b7eac44ce4b5e58d583cb28bb8aeedee1",
+    "size": 8437536,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Geneva1599.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Geneva1599.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/9873608b7eac44ce4b5e58d583cb28bb8aeedee1",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Geneva1599.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Geneva1599.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/9873608b7eac44ce4b5e58d583cb28bb8aeedee1",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Geneva1599.json"
+    }
+  },
+  {
+    "name": "JPS.json",
+    "path": "formats/json/JPS.json",
+    "sha": "6a94d3c0033ca40b036a1ceb2cc53918fef2db2d",
+    "size": 6397355,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/JPS.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/JPS.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/6a94d3c0033ca40b036a1ceb2cc53918fef2db2d",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/JPS.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/JPS.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/6a94d3c0033ca40b036a1ceb2cc53918fef2db2d",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/JPS.json"
+    }
+  },
+  {
+    "name": "Jubilee2000.json",
+    "path": "formats/json/Jubilee2000.json",
+    "sha": "3adfcb91eb4c81cd60711080ab2dc1237499541b",
+    "size": 8421460,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Jubilee2000.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Jubilee2000.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/3adfcb91eb4c81cd60711080ab2dc1237499541b",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Jubilee2000.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Jubilee2000.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/3adfcb91eb4c81cd60711080ab2dc1237499541b",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Jubilee2000.json"
+    }
+  },
+  {
+    "name": "KJV.json",
+    "path": "formats/json/KJV.json",
+    "sha": "d84e9bec81c76d3c8116d216b2af5d6ab03b71c8",
+    "size": 8395929,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/KJV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/KJV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/d84e9bec81c76d3c8116d216b2af5d6ab03b71c8",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/KJV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/KJV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/d84e9bec81c76d3c8116d216b2af5d6ab03b71c8",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/KJV.json"
+    }
+  },
+  {
+    "name": "KJVA.json",
+    "path": "formats/json/KJVA.json",
+    "sha": "a43d2305444b9faf0d087598178459ee63b538c1",
+    "size": 9928298,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/KJVA.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/KJVA.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/a43d2305444b9faf0d087598178459ee63b538c1",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/KJVA.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/KJVA.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/a43d2305444b9faf0d087598178459ee63b538c1",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/KJVA.json"
+    }
+  },
+  {
+    "name": "KJVPCE.json",
+    "path": "formats/json/KJVPCE.json",
+    "sha": "0d7dba844fdb3fd6e1cf51b5d9ed06b6c94b7914",
+    "size": 8434064,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/KJVPCE.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/KJVPCE.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/0d7dba844fdb3fd6e1cf51b5d9ed06b6c94b7914",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/KJVPCE.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/KJVPCE.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/0d7dba844fdb3fd6e1cf51b5d9ed06b6c94b7914",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/KJVPCE.json"
+    }
+  },
+  {
+    "name": "LEB.json",
+    "path": "formats/json/LEB.json",
+    "sha": "760bd69881a3becbebf5ccc84b003c179e224c9a",
+    "size": 8508471,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/LEB.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/LEB.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/760bd69881a3becbebf5ccc84b003c179e224c9a",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/LEB.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/LEB.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/760bd69881a3becbebf5ccc84b003c179e224c9a",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/LEB.json"
+    }
+  },
+  {
+    "name": "LITV.json",
+    "path": "formats/json/LITV.json",
+    "sha": "c7897fcb1a34b9dcdb3cea2e34aae9978d9260e5",
+    "size": 8308894,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/LITV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/LITV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/c7897fcb1a34b9dcdb3cea2e34aae9978d9260e5",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/LITV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/LITV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/c7897fcb1a34b9dcdb3cea2e34aae9978d9260e5",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/LITV.json"
+    }
+  },
+  {
+    "name": "MKJV.json",
+    "path": "formats/json/MKJV.json",
+    "sha": "150cb4b456dae4997890c442733b97f4fd9f8e50",
+    "size": 8293991,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/MKJV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/MKJV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/150cb4b456dae4997890c442733b97f4fd9f8e50",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/MKJV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/MKJV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/150cb4b456dae4997890c442733b97f4fd9f8e50",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/MKJV.json"
+    }
+  },
+  {
+    "name": "NHEB.json",
+    "path": "formats/json/NHEB.json",
+    "sha": "90c20c464ed17f4e3c2600e738aa3ba5b140416f",
+    "size": 8299514,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/NHEB.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/NHEB.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/90c20c464ed17f4e3c2600e738aa3ba5b140416f",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/NHEB.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/NHEB.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/90c20c464ed17f4e3c2600e738aa3ba5b140416f",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/NHEB.json"
+    }
+  },
+  {
+    "name": "NHEBJE.json",
+    "path": "formats/json/NHEBJE.json",
+    "sha": "c61e589109ee3af4d997cc04e5eedb00407b1120",
+    "size": 8295419,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/NHEBJE.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/NHEBJE.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/c61e589109ee3af4d997cc04e5eedb00407b1120",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/NHEBJE.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/NHEBJE.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/c61e589109ee3af4d997cc04e5eedb00407b1120",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/NHEBJE.json"
+    }
+  },
+  {
+    "name": "NHEBME.json",
+    "path": "formats/json/NHEBME.json",
+    "sha": "2266c35df7dc4ce89eb046c05edfce8169dc8722",
+    "size": 8302122,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/NHEBME.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/NHEBME.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/2266c35df7dc4ce89eb046c05edfce8169dc8722",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/NHEBME.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/NHEBME.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/2266c35df7dc4ce89eb046c05edfce8169dc8722",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/NHEBME.json"
+    }
+  },
+  {
+    "name": "Noyes.json",
+    "path": "formats/json/Noyes.json",
+    "sha": "afe2877a01b3e03686e8aa3fd1031d6edbda1840",
+    "size": 6500097,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Noyes.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Noyes.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/afe2877a01b3e03686e8aa3fd1031d6edbda1840",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Noyes.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Noyes.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/afe2877a01b3e03686e8aa3fd1031d6edbda1840",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Noyes.json"
+    }
+  },
+  {
+    "name": "OEB.json",
+    "path": "formats/json/OEB.json",
+    "sha": "d6664e87e649655e6313af71443cc7fae021bca1",
+    "size": 5507048,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/OEB.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/OEB.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/d6664e87e649655e6313af71443cc7fae021bca1",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/OEB.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/OEB.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/d6664e87e649655e6313af71443cc7fae021bca1",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/OEB.json"
+    }
+  },
+  {
+    "name": "RLT.json",
+    "path": "formats/json/RLT.json",
+    "sha": "5967dfdd4a6e1f06463e11db1d1337ac0a1b2874",
+    "size": 8372949,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/RLT.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/RLT.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/5967dfdd4a6e1f06463e11db1d1337ac0a1b2874",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/RLT.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/RLT.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/5967dfdd4a6e1f06463e11db1d1337ac0a1b2874",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/RLT.json"
+    }
+  },
+  {
+    "name": "RWebster.json",
+    "path": "formats/json/RWebster.json",
+    "sha": "ef127a2d2a084be901338ddce52fc89bac506e34",
+    "size": 8395868,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/RWebster.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/RWebster.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/ef127a2d2a084be901338ddce52fc89bac506e34",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/RWebster.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/RWebster.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/ef127a2d2a084be901338ddce52fc89bac506e34",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/RWebster.json"
+    }
+  },
+  {
+    "name": "Rotherham.json",
+    "path": "formats/json/Rotherham.json",
+    "sha": "e164ba4d8e976b6a977999c40aa0b54ea9cf73d4",
+    "size": 8655063,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Rotherham.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Rotherham.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/e164ba4d8e976b6a977999c40aa0b54ea9cf73d4",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Rotherham.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Rotherham.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/e164ba4d8e976b6a977999c40aa0b54ea9cf73d4",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Rotherham.json"
+    }
+  },
+  {
+    "name": "Twenty.json",
+    "path": "formats/json/Twenty.json",
+    "sha": "eca5d5535de36c5ec032e23216fdbd727dfb0353",
+    "size": 5309066,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Twenty.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Twenty.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/eca5d5535de36c5ec032e23216fdbd727dfb0353",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Twenty.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Twenty.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/eca5d5535de36c5ec032e23216fdbd727dfb0353",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Twenty.json"
+    }
+  },
+  {
+    "name": "Tyndale.json",
+    "path": "formats/json/Tyndale.json",
+    "sha": "129b5e336e3e2b8bd54e9975c90037eebfc7dfef",
+    "size": 5221003,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Tyndale.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Tyndale.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/129b5e336e3e2b8bd54e9975c90037eebfc7dfef",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Tyndale.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Tyndale.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/129b5e336e3e2b8bd54e9975c90037eebfc7dfef",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Tyndale.json"
+    }
+  },
+  {
+    "name": "UKJV.json",
+    "path": "formats/json/UKJV.json",
+    "sha": "02d7bc5f5c72d0319a302f2e8b41b0d00ee72112",
+    "size": 8444980,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/UKJV.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/UKJV.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/02d7bc5f5c72d0319a302f2e8b41b0d00ee72112",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/UKJV.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/UKJV.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/02d7bc5f5c72d0319a302f2e8b41b0d00ee72112",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/UKJV.json"
+    }
+  },
+  {
+    "name": "WLC.json",
+    "path": "formats/json/WLC.json",
+    "sha": "e021295154c51c4ab1f7ef42bb3725578d5b0820",
+    "size": 8594109,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/WLC.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/WLC.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/e021295154c51c4ab1f7ef42bb3725578d5b0820",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/WLC.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/WLC.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/e021295154c51c4ab1f7ef42bb3725578d5b0820",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/WLC.json"
+    }
+  },
+  {
+    "name": "Webster.json",
+    "path": "formats/json/Webster.json",
+    "sha": "643ea52f61b67eb9e9c33fcae4394b5f9dff63a4",
+    "size": 8404591,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Webster.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Webster.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/643ea52f61b67eb9e9c33fcae4394b5f9dff63a4",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/Webster.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/Webster.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/643ea52f61b67eb9e9c33fcae4394b5f9dff63a4",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/Webster.json"
+    }
+  },
+  {
+    "name": "YLT.json",
+    "path": "formats/json/YLT.json",
+    "sha": "7ceffe6737687b33255df0266b243407925e5ada",
+    "size": 8466313,
+    "url": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/YLT.json?ref=2025",
+    "html_url": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/YLT.json",
+    "git_url": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/7ceffe6737687b33255df0266b243407925e5ada",
+    "download_url": "https://raw.githubusercontent.com/scrollmapper/bible_databases/2025/formats/json/YLT.json",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/scrollmapper/bible_databases/contents/formats/json/YLT.json?ref=2025",
+      "git": "https://api.github.com/repos/scrollmapper/bible_databases/git/blobs/7ceffe6737687b33255df0266b243407925e5ada",
+      "html": "https://github.com/scrollmapper/bible_databases/blob/2025/formats/json/YLT.json"
+    }
+  }
+]

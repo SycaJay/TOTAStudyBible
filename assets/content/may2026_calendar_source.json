@@ -1,0 +1,190 @@
+{
+  "days": {
+    "2026-05-01": {
+      "devotional_topic": "WHAT GOD MAY PERMIT",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Isaiah 45:7"
+    },
+    "2026-05-02": {
+      "devotional_topic": "WHEN GOD PERMITTED PLAGUES",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "Exodus 9:2-3"
+    },
+    "2026-05-03": {
+      "devotional_topic": "GOD DOESN'T KEEP DEATH ANGELS",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "1 Peter 5:8"
+    },
+    "2026-05-04": {
+      "devotional_topic": "SAUL'S WRONG STANDING",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "1 Samuel 16:14"
+    },
+    "2026-05-05": {
+      "devotional_topic": "YOUR RIGHT-STANDING",
+      "display_translation": "NIV",
+      "bundle_id": "niv",
+      "scripture_spec": "John 15:4"
+    },
+    "2026-05-06": {
+      "devotional_topic": "THE LYING SPIRIT",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "1 Kings 22:22"
+    },
+    "2026-05-07": {
+      "devotional_topic": "THE LYING SPIRIT II",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "1 Kings 22:22"
+    },
+    "2026-05-08": {
+      "devotional_topic": "PRAYER AFFECTS THE WORLD AROUND US",
+      "display_translation": "KJV",
+      "bundle_id": "kjv",
+      "scripture_spec": "James 5:16"
+    },
+    "2026-05-09": {
+      "devotional_topic": "PRAYER AFFECTS THE WORLD AROUND US II",
+      "display_translation": "KJV",
+      "bundle_id": "kjv",
+      "scripture_spec": "James 5:16"
+    },
+    "2026-05-10": {
+      "devotional_topic": "PRAYERS TO BRING IN THE DAY OF THE LORD",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "2 Peter 3:10"
+    },
+    "2026-05-11": {
+      "devotional_topic": "CONTENTIONS IN PRAYER",
+      "display_translation": "KJV",
+      "bundle_id": "kjv",
+      "scripture_spec": "Ephesians 6:12"
+    },
+    "2026-05-12": {
+      "devotional_topic": "YOU ARE A THE PRAY-ER FOR THIS WORLD",
+      "display_translation": "KJV",
+      "bundle_id": "kjv",
+      "scripture_spec": "James 5:16"
+    },
+    "2026-05-13": {
+      "devotional_topic": "DAY OF PRAYER (DAY 1)",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Revelation 11:15; Matthew 24:14; Revelation 17:14"
+    },
+    "2026-05-14": {
+      "devotional_topic": "DAY OF PRAYER (DAY 2)",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "2 Corinthians 10:5; Colossians 2:15; Psalm 24:1-2"
+    },
+    "2026-05-15": {
+      "devotional_topic": "GOD'S TREES OF DOMINANCE",
+      "display_translation": "BSB",
+      "bundle_id": "web",
+      "scripture_spec": "Daniel 4:10"
+    },
+    "2026-05-16": {
+      "devotional_topic": "THE THRONE TREES OF WITNESSES",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "Zechariah 4:11-14"
+    },
+    "2026-05-17": {
+      "devotional_topic": "THE TWO WITNESSES",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Revelation 11:3"
+    },
+    "2026-05-18": {
+      "devotional_topic": "GOD'S OLIVE TREES",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "Romans 11:11"
+    },
+    "2026-05-19": {
+      "devotional_topic": "YOUR CALL IN THIS OLIVE TREE",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "Romans 11:23"
+    },
+    "2026-05-20": {
+      "devotional_topic": "THE LAST PLANTING",
+      "display_translation": "KJV",
+      "bundle_id": "kjv",
+      "scripture_spec": "Isaiah 61:3"
+    },
+    "2026-05-21": {
+      "devotional_topic": "PLANTED IN THE HOUSE",
+      "display_translation": "KJV",
+      "bundle_id": "kjv",
+      "scripture_spec": "Isaiah 61:3"
+    },
+    "2026-05-22": {
+      "devotional_topic": "GROWTH IN UNISON",
+      "display_translation": "ESV",
+      "bundle_id": "web",
+      "scripture_spec": "Isaiah 32:15"
+    },
+    "2026-05-23": {
+      "devotional_topic": "DEEPER ROOTS",
+      "display_translation": "ESV",
+      "bundle_id": "web",
+      "scripture_spec": "Psalm 92:13"
+    },
+    "2026-05-24": {
+      "devotional_topic": "REDEFINE YOUR COMMITMENT",
+      "display_translation": "ESV",
+      "bundle_id": "web",
+      "scripture_spec": "Psalm 92:13"
+    },
+    "2026-05-25": {
+      "devotional_topic": "ABIDING ROOTS",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "John 15:5"
+    },
+    "2026-05-26": {
+      "devotional_topic": "THE MYSTERY OF THE MEASURING ROD",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Ezekiel 40:3"
+    },
+    "2026-05-27": {
+      "devotional_topic": "MEASURING THE NATIONS",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Matthew 24:14"
+    },
+    "2026-05-28": {
+      "devotional_topic": "SPREAD YOUR WINGS IN FLIGHT",
+      "display_translation": "NLT",
+      "bundle_id": "web",
+      "scripture_spec": "Isaiah 40:31"
+    },
+    "2026-05-29": {
+      "devotional_topic": "WE LIVE IN PRIVILEGED TIMES",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Ephesians 5:15-16"
+    },
+    "2026-05-30": {
+      "devotional_topic": "THE EVIL MARKET PLACE",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Revelation 18:3"
+    },
+    "2026-05-31": {
+      "devotional_topic": "THE BARREL AND THE DRUNKENNESS",
+      "display_translation": "NKJV",
+      "bundle_id": "nkjv",
+      "scripture_spec": "Revelation 18:3"
+    }
+  }
+}

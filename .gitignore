@@ -1,0 +1,66 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Firebase Cloud Functions
+functions/node_modules/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Secrets & local config (keep *.example files in repo)
+.env
+.env.*
+*.pem
+*.p12
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase-adminsdk*.json
+**/*serviceAccount*.json
+lib/firebase_options.dart
+lib/bible/api_bible_local_key.dart
+
+# Docs / notes
+*.md
+
+# Bundled Bible JSON (large; add locally or via separate download)
+/assets/bible/

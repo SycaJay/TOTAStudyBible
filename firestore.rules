@@ -1,0 +1,138 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function allowedUserKeys() {
+      return [
+        'email',
+        'displayName',
+        'photoUrl',
+        'updatedAt',
+        'journalTopics',
+        'prayers',
+        'readingBook',
+        'readingChapter',
+        'readingProgress',
+        'syncedAt',
+      ];
+    }
+
+    function optionalStringField(data, name, maxLen) {
+      return !data.keys().hasAny([name])
+        || (data[name] is string && data[name].size() <= maxLen);
+    }
+
+    function optionalNumberField(data, name) {
+      return !data.keys().hasAny([name])
+        || data[name] is int
+        || data[name] is float;
+    }
+
+    function validJournalTopics(data) {
+      return !data.keys().hasAny(['journalTopics'])
+        || (data.journalTopics is list && data.journalTopics.size() <= 500);
+    }
+
+    function validPrayers(data) {
+      return !data.keys().hasAny(['prayers'])
+        || (data.prayers is list && data.prayers.size() <= 500);
+    }
+
+    function validUserDoc(data) {
+      return data.keys().hasOnly(allowedUserKeys())
+        && optionalStringField(data, 'email', 320)
+        && optionalStringField(data, 'displayName', 200)
+        && optionalStringField(data, 'photoUrl', 2000)
+        && optionalStringField(data, 'readingBook', 120)
+        && optionalNumberField(data, 'readingChapter')
+        && optionalNumberField(data, 'readingProgress')
+        && validJournalTopics(data)
+        && validPrayers(data);
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && validUserDoc(request.resource.data);
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && validUserDoc(request.resource.data);
+      allow delete: if false;
+
+      match /highlights/{highlightId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+          && request.auth.uid == userId
+          && validHighlight(request.resource.data);
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /notes/{noteId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+          && request.auth.uid == userId
+          && validNote(request.resource.data);
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /bookmarks/{bookmarkId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+          && request.auth.uid == userId
+          && validBookmark(request.resource.data);
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    function validHighlight(data) {
+      return data.keys().hasOnly([
+          'book', 'chapter', 'verse', 'translationId', 'colorIndex', 'updatedAt'
+        ])
+        && data.book is string && data.book.size() <= 120
+        && data.chapter is int && data.chapter > 0
+        && data.verse is int && data.verse > 0
+        && data.translationId is string && data.translationId.size() <= 40
+        && data.colorIndex is int && data.colorIndex >= 0 && data.colorIndex < 7;
+    }
+
+    function validNote(data) {
+      return data.keys().hasOnly([
+          'book', 'chapter', 'verse', 'translationId', 'text', 'isDraft', 'updatedAt'
+        ])
+        && data.book is string && data.book.size() <= 120
+        && data.chapter is int && data.chapter > 0
+        && data.verse is int && data.verse > 0
+        && data.translationId is string && data.translationId.size() <= 40
+        && data.text is string && data.text.size() <= 8000
+        && data.isDraft is bool;
+    }
+
+    function validBookmark(data) {
+      return data.keys().hasOnly([
+          'book', 'chapter', 'verse', 'translationId', 'updatedAt'
+        ])
+        && data.book is string && data.book.size() <= 120
+        && data.chapter is int && data.chapter > 0
+        && data.verse is int && data.verse > 0
+        && data.translationId is string && data.translationId.size() <= 40;
+    }
+
+    // Public read for daily verse / devotional (same schema as assets/content JSON).
+    // Writes only via Admin SDK (Console, Cloud Functions, service account).
+    match /daily/{dayId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Public read: studio media catalog (videos / audio links). Admin writes only.
+    match /studio/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

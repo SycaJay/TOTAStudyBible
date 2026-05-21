@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastor Elliot Digital Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/8.4.5/swiper-bundle.min.css">
+    <link rel="icon" href="/assets/PEDS.jpg" type="image/x-icon">
+    <style>
+    .video-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .video-container:hover .play-overlay {
+            opacity: 1;
+        }
+        .studio-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+        .studio-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        .content-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-in-out;
+        }
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .media-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .media-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .media-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: 0.5s;
+        }
+        .media-card:hover::after {
+            left: 100%;
+        }
+        .audio-player {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+        .back-to-home {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+        .back-to-home:hover {
+            transform: scale(1.1);
+        }
+        .close-section {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            transition: all 0.3s ease;
+        }
+        .close-section:hover {
+            transform: rotate(90deg);
+        }
+        .recent-uploads {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .recent-uploads:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900">
+    <!-- Background gradient -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"></div>
+    </div>
+
+    <!-- Back to Home Button -->
+<button onclick="window.location.href='../index.php';" class="back-to-home bg-blue-500 hover:bg-blue-600 text-white rounded-full p-4 shadow-lg">
+    <i class="fas fa-home text-xl"></i>
+</button>
+
+
+    <!-- Navigation -->
+    <nav class="relative z-20 bg-black bg-opacity-50 backdrop-blur-md border-b border-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-green-500 p-0.5">
+                            <img src="/assets/PEDS.jpg" alt="Studio Logo" class="w-full h-full rounded-full">
+                        </div>
+                        <div class="ml-4">
+                            <span class="text-2xl font-bold text-white">Pastor Elliot Digital Studio</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 container mx-auto px-4 pt-12">
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <h1 class="text-5xl font-bold text-white mb-6">Welcome to Pastor Elliot's Digital Studio</h1>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <!-- Video Sermons Card -->
+            <div class="studio-card rounded-xl p-6 text-white">
+                <i class="fas fa-video text-3xl text-blue-500 mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">Video Sermons</h3>
+                <p class="text-gray-400 mb-4">Watch Video Sermons By The Man of God</p>
+                <button onclick="toggleSection('videoSermons')" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    View Sermons
+                </button>
+            </div>
+
+            <!-- Podcast Card -->
+            <div class="studio-card rounded-xl p-6 text-white">
+                <i class="fas fa-microphone-alt text-3xl text-green-500 mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">Podcast Studio</h3>
+                <p class="text-gray-400 mb-4">Listen to high-quality audio content</p>
+                <button onclick="toggleSection('podcastSection')" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    View Podcasts
+                </button>
+            </div>
+
+            <!-- Audio Sermons Card -->
+            <div class="studio-card rounded-xl p-6 text-white">
+                <i class="fas fa-headphones text-3xl text-purple-500 mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">Audio Sermons</h3>
+                <p class="text-gray-400 mb-4">Listen to Audio Sermons</p>
+                <button onclick="toggleSection('audioSermons')" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    View Audio
+                </button>
+            </div>
+        </div>
+
+<!-- Video Sermons Section -->
+<section id="videoSermons" class="content-section mb-16 relative">
+    <button onclick="closeSection('videoSermons')" class="close-section text-white hover:text-red-500">
+        <i class="fas fa-times text-xl"></i>
+    </button>
+    <h2 class="text-3xl font-bold text-white mb-8">Video Sermons</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Video 1 -->
+        <div class="media-card bg-gray-800 rounded-xl overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps6" alt="Sermon 1" class="w-full h-48 object-contain">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playVideo('video1')" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 transform hover:scale-110 transition duration-300">
+                        <i class="fas fa-play text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <h3 class="text-white font-bold mb-2">The Oil and The Wine</h3>
+                <p class="text-gray-400 text-sm">Battle of the Ages conference</p>
+            </div>
+        </div>
+
+        <!-- Video 2 -->
+        <div class="media-card bg-gray-800 rounded-xl overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps7" alt="Sermon 2" class="w-full h-48 object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playVideo('video2')" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 transform hover:scale-110 transition duration-300">
+                        <i class="fas fa-play text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <h3 class="text-white font-bold mb-2">Sounds and Rumblings</h3>
+                <p class="text-gray-400 text-sm">Battle of the Ages conference</p>
+            </div>
+        </div>
+
+        <!-- Video 3 -->
+        <div class="media-card bg-gray-800 rounded-xl overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps5" alt="Sermon 3" class="w-full h-48 object-contain">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playVideo('video3')" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 transform hover:scale-110 transition duration-300">
+                        <i class="fas fa-play text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <h3 class="text-white font-bold mb-2">How Prepared Are You?</h3>
+                <p class="text-gray-400 text-sm"></p>
+            </div>
+        </div>
+    </div>
+    <!-- Hidden Video Elements with Custom Controls -->
+    <div id="videoControls1" class="hidden mt-4 bg-gray-800 p-4 rounded-lg">
+        <video id="video1" src="../assets/BOTA24.mp4" class="w-full"></video>
+        <div class="flex items-center mt-2 space-x-4">
+            <button onclick="togglePlayPause('video1')" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2">
+                <i id="playPauseIcon1" class="fas fa-play"></i>
+            </button>
+            <input type="range" id="seekBar1" class="w-full" value="0">
+            <span id="currentTime1" class="text-white">0:00</span>
+            <span id="duration1" class="text-gray-400">0:00</span>
+        </div>
+    </div>
+    <div id="videoControls2" class="hidden mt-4 bg-gray-800 p-4 rounded-lg">
+        <video id="video2" src="../assets/BOTA22.mp4" class="w-full"></video>
+        <div class="flex items-center mt-2 space-x-4">
+            <button onclick="togglePlayPause('video2')" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2">
+                <i id="playPauseIcon2" class="fas fa-play"></i>
+            </button>
+            <input type="range" id="seekBar2" class="w-full" value="0">
+            <span id="currentTime2" class="text-white">0:00</span>
+            <span id="duration2" class="text-gray-400">0:00</span>
+        </div>
+    </div>
+    <div id="videoControls3" class="hidden mt-4 bg-gray-800 p-4 rounded-lg">
+        <video id="video3" src="../assets/Prepared.mp4" class="w-full"></video>
+        <div class="flex items-center mt-2 space-x-4">
+            <button onclick="togglePlayPause('video3')" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2">
+                <i id="playPauseIcon3" class="fas fa-play"></i>
+            </button>
+            <input type="range" id="seekBar3" class="w-full" value="0">
+            <span id="currentTime3" class="text-white">0:00</span>
+            <span id="duration3" class="text-gray-400">0:00</span>
+        </div>
+    </div>
+</section>
+
+<!-- Podcast Section -->
+<section id="podcastSection" class="content-section mb-16 relative">
+    <button onclick="closeSection('podcastSection')" class="close-section text-white hover:text-red-500">
+        <i class="fas fa-times text-xl"></i>
+    </button>
+    <h2 class="text-3xl font-bold text-white mb-8">Latest Podcasts</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Podcast 1 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps5" alt="Podcast 1" class="w-full h-40 object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playPodcast('podcast1')" class="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="podcastIcon1" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">The War of the Trees</h3>
+                <p class="text-gray-400 text-xs">Part 1 • 33 mins</p>
+            </div>
+            <div id="podcastControls1" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="togglePlayPausePodcast('podcast1')" class="text-white hover:text-green-500">
+                        <i id="controlIcon1" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="podcastSeekBar1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="podcastCurrentTime1">0:00</span>
+                            <span id="podcastDuration1">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustVolume('podcast1', 'down')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="volumeControl1" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustVolume('podcast1', 'up')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Podcast 2 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps6" alt="Podcast 2" class="w-full h-40 object-contain">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playPodcast('podcast2')" class="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="podcastIcon2" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">The War of the Trees</h3>
+                <p class="text-gray-400 text-xs">Part 2 • 24 mins</p>
+            </div>
+            <div id="podcastControls2" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="togglePlayPausePodcast('podcast2')" class="text-white hover:text-green-500">
+                        <i id="controlIcon2" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="podcastSeekBar2" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="podcastCurrentTime2">0:00</span>
+                            <span id="podcastDuration2">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustVolume('podcast2', 'down')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="volumeControl2" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustVolume('podcast2', 'up')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Podcast 3 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps7" alt="Podcast 3" class="w-full h-40 object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playPodcast('podcast3')" class="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="podcastIcon3" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">Intimacy And Revival</h3>
+                <p class="text-gray-400 text-xs">•</p>
+            </div>
+            <div id="podcastControls3" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="togglePlayPausePodcast('podcast3')" class="text-white hover:text-green-500">
+                        <i id="controlIcon3" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="podcastSeekBar3" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="podcastCurrentTime3">0:00</span>
+                            <span id="podcastDuration3">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustVolume('podcast3', 'down')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="volumeControl3" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustVolume('podcast3', 'up')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Podcast 4 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Sir2.jpg" alt="Podcast 4" class="w-full h-40 object-contain">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playPodcast('podcast4')" class="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="podcastIcon4" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">Songs of the Lamb</h3>
+                <p class="text-gray-400 text-xs">•</p>
+            </div>
+            <div id="podcastControls4" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="togglePlayPausePodcast('podcast4')" class="text-white hover:text-green-500">
+                        <i id="controlIcon4" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="podcastSeekBar4" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="podcastCurrentTime4">0:00</span>
+                            <span id="podcastDuration4">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustVolume('podcast4', 'down')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="volumeControl4" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustVolume('podcast4', 'up')" class="text-white hover:text-green-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Podcast Elements -->
+    <audio id="podcast1" src="../assets/wartrees1.mp3"></audio>
+    <audio id="podcast2" src="../assets/wartrees2.mp3"></audio>
+    <audio id="podcast3" src="../assets/intimacy.mp3"></audio>
+    <audio id="podcast4" src="../assets/songslamb.mp3"></audio>
+</section>
+
+       <!-- Audio Sermons Section -->
+<!-- Audio Sermons Section -->
+<section id="audioSermons" class="content-section mb-16 relative">
+    <button onclick="closeSection('audioSermons')" class="close-section text-white hover:text-red-500">
+        <i class="fas fa-times text-xl"></i>
+    </button>
+    <h2 class="text-3xl font-bold text-white mb-8">Audio Sermons</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Audio 1 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Sir2.jpg" alt="Audio Sermon 1" class="w-full h-40 object-contain">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playAudioSermon('audio1')" class="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="audioIcon1" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">The Faith that Overcomes</h3>
+                <p class="text-gray-400 text-xs">• Oct 06 2025</p>
+            </div>
+            <div id="audioControls1" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleAudioSermon('audio1')" class="text-white hover:text-purple-500">
+                        <i id="audioControlIcon1" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="audioSeekBar1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="audioCurrentTime1">0:00</span>
+                            <span id="audioDuration1">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustAudioVolume('audio1', 'down')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="audioVolumeControl1" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustAudioVolume('audio1', 'up')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio 2 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps6" alt="Audio Sermon 2" class="w-full h-40 object-contain">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playAudioSermon('audio2')" class="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="audioIcon2" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">An Early Retirement?</h3>
+                <p class="text-gray-400 text-xs">• Sep 28,2025</p>
+            </div>
+            <div id="audioControls2" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleAudioSermon('audio2')" class="text-white hover:text-purple-500">
+                        <i id="audioControlIcon2" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="audioSeekBar2" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="audioCurrentTime2">0:00</span>
+                            <span id="audioDuration2">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustAudioVolume('audio2', 'down')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="audioVolumeControl2" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustAudioVolume('audio2', 'up')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio 3 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Ps7" alt="Audio Sermon 3" class="w-full h-40 object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playAudioSermon('audio3')" class="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="audioIcon3" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">Heirs Of The Father I</h3>
+                <p class="text-gray-400 text-xs">• Oct 5, 2025</p>
+            </div>
+            <div id="audioControls3" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleAudioSermon('audio3')" class="text-white hover:text-purple-500">
+                        <i id="audioControlIcon3" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="audioSeekBar3" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="audioCurrentTime3">0:00</span>
+                            <span id="audioDuration3">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustAudioVolume('audio3', 'down')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="audioVolumeControl3" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustAudioVolume('audio3', 'up')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio 4 -->
+        <div class="media-card bg-gray-800 rounded-lg overflow-hidden">
+            <div class="relative group">
+                <img src="../assets/Sir.jpg" alt="Audio Sermon 4" class="w-full h-40 object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <button onclick="playAudioSermon('audio4')" class="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 transform hover:scale-110 transition duration-300">
+                        <i id="audioIcon4" class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3">
+                <h3 class="text-white font-bold text-sm mb-1">Heirs Of The Father II</h3>
+                <p class="text-gray-400 text-xs">• Oct 12, 2025</p>
+            </div>
+            <div id="audioControls4" class="hidden p-3 bg-gray-700">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleAudioSermon('audio4')" class="text-white hover:text-purple-500">
+                        <i id="audioControlIcon4" class="fas fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="audioSeekBar4" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" value="0">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="audioCurrentTime4">0:00</span>
+                            <span id="audioDuration4">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="adjustAudioVolume('audio4', 'down')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="audioVolumeControl4" class="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer" min="0" max="1" step="0.1" value="1">
+                        <button onclick="adjustAudioVolume('audio4', 'up')" class="text-white hover:text-purple-500">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Audio Elements -->
+    <audio id="audio1" src="../assets/faith_that_overcomes.mp3"></audio>
+    <audio id="audio2" src="../assets/AN_EARLY_RETIREMENT.m4a"></audio>
+    <audio id="audio3" src="../assets/HeirsoftheFatherI.mp3"></audio>
+    <audio id="audio4" src="../assets/HeirsoftheFatherII.mp3"></audio>
+</section>
+
+       <!-- Recent Uploads Section -->
+<section class="mb-16">
+    <h2 class="text-3xl font-bold text-white mb-8">Glorious Highlights</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Recent Upload 1 -->
+        <div class="recent-uploads rounded-xl overflow-hidden p-4">
+            <div class="video-container aspect-video bg-gray-800 rounded-lg">
+                <video id="video-1" class="w-full h-full object-cover">
+                    <source src="../assets/BOTA2.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="play-overlay">
+                    <button onclick="toggleVideo('video-1')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 backdrop-blur-sm transition duration-300">
+                        <i class="fas fa-play text-white text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4">
+                <h3 class="text-white font-bold">Battle of the Ages;The Oil and the Wine</h3>
+                <p class="text-gray-400 text-sm">Excerpts</p>
+            </div>
+        </div>
+
+        <!-- Recent Upload 2 -->
+        <div class="recent-uploads rounded-xl overflow-hidden p-4">
+            <div class="video-container aspect-video bg-gray-800 rounded-lg">
+                <video id="video-2" class="w-full h-full object-cover">
+                    <source src="../assets/HSWC.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="play-overlay">
+                    <button onclick="toggleVideo('video-2')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 backdrop-blur-sm transition duration-300">
+                        <i class="fas fa-play text-white text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4">
+                <h3 class="text-white font-bold">Harvest Soul Winners Classics</h3>
+                <p class="text-gray-400 text-sm">Excerpts</p>
+            </div>
+        </div>
+    </div>
+</section>
+    
+    <!-- Add this section after the Recent Uploads section and before the footer -->
+<section class="mb-16 pt-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <!-- Left side - Text Content -->
+        <div class="space-y-6">
+            <h2 class="text-5xl font-bold text-white leading-tight">
+                Step into a world of spiritual enlightenment <br>
+                with Pastor Elliot Digital Studio.<br>
+            </h2>
+            <p class="text-xl text-gray-300">
+                Understand the Last Days,The Rapture,The End of The Age and The City of God Like you never have.
+            </p>
+        </div>
+
+        <!-- Right side - Frames Grid -->
+        <div class="grid grid-cols-2 gap-6">
+            <!-- Frame 1 -->
+            <div class="relative group">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg transform rotate-1 group-hover:rotate-2 transition-transform duration-300"></div>
+                <div class="relative bg-gray-800 p-1 rounded-lg transform -rotate-1 group-hover:rotate-0 transition-transform duration-300">
+                    <div class="relative overflow-hidden rounded-lg aspect-[3/4]">
+                        <img src="../assets/Sir.jpg" alt="Gallery Image 1" class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame 2 -->
+            <div class="relative group mt-8">
+                <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg transform -rotate-1 group-hover:-rotate-2 transition-transform duration-300"></div>
+                <div class="relative bg-gray-800 p-1 rounded-lg transform rotate-1 group-hover:rotate-0 transition-transform duration-300">
+                    <div class="relative overflow-hidden rounded-lg aspect-[3/4]">
+                        <img src="../assets/Sir2.jpg" alt="Gallery Image 2" class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame 3 -->
+            <div class="relative group -mt-8">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg transform rotate-2 group-hover:rotate-3 transition-transform duration-300"></div>
+                <div class="relative bg-gray-800 p-1 rounded-lg transform -rotate-2 group-hover:rotate-0 transition-transform duration-300">
+                    <div class="relative overflow-hidden rounded-lg aspect-[3/4]">
+                        <img src="../assets/Sir3.JPG" alt="Gallery Image 3" class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame 4 -->
+            <div class="relative group">
+                <div class="absolute inset-0 bg-gradient-to-r from-yellow-500 to-red-500 rounded-lg transform -rotate-1 group-hover:-rotate-2 transition-transform duration-300"></div>
+                <div class="relative bg-gray-800 p-1 rounded-lg transform rotate-1 group-hover:rotate-0 transition-transform duration-300">
+                    <div class="relative overflow-hidden rounded-lg aspect-[3/4]">
+                        <img src="../assets/Sir5.jpg" alt="Gallery Image 4" class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-black bg-opacity-50 backdrop-blur-md mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-4">Studio Location</h4>
+                    <p class="text-gray-400">Takoradi <br>Western,Ghana</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-4">Contact Us</h4>
+                    <p class="text-gray-400">info@gloriousvisionstvplus.com<br>+233 20 126 0746</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-4">Connect With Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://www.youtube.com/@gloriousvisionsherrnhuttel4605" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-youtube text-2xl"></i>
+                        </a>
+                        <a href="https://www.instagram.com/glorylife_today/" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-instagram text-2xl"></i>
+                        </a>
+                        <a href="https://www.facebook.com/groups/1454613778324060" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-facebook text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+     </main>
+
+    <script>
+        // Function to toggle content sections
+        function toggleSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            const selectedSection = document.getElementById(sectionId);
+            selectedSection.classList.add('active');
+            
+            // Smooth scroll to section
+            selectedSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Function to close section
+        function closeSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.remove('active');
+        }
+
+        // Function to go back to home
+        function backToHome() {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+      // Function to play videos
+// Function to play videos with controls
+    function playVideo(videoId) {
+        const videoControls = document.getElementById(`videoControls${videoId.slice(-1)}`);
+        const video = document.getElementById(videoId);
+        
+        // Hide all other video controls
+        document.querySelectorAll('[id^="videoControls"]').forEach(controls => {
+            if (controls.id !== `videoControls${videoId.slice(-1)}`) {
+                controls.classList.add('hidden');
+            }
+        });
+        
+        // Show the selected video controls
+        videoControls.classList.remove('hidden');
+        
+        // Stop all videos and podcasts first
+        document.querySelectorAll('video, audio').forEach(media => {
+            if (media.id !== videoId) {
+                media.pause();
+                media.currentTime = 0;
+            }
+        });
+        
+        // Play/pause toggle for clicked video
+        if (video.paused) {
+            video.play();
+            document.getElementById(`playPauseIcon${videoId.slice(-1)}`).classList.replace('fa-play', 'fa-pause');
+        } else {
+            video.pause();
+            document.getElementById(`playPauseIcon${videoId.slice(-1)}`).classList.replace('fa-pause', 'fa-play');
+        }
+        
+        // Update seek bar and time display
+        video.addEventListener('timeupdate', () => {
+            const seekBar = document.getElementById(`seekBar${videoId.slice(-1)}`);
+            const currentTime = document.getElementById(`currentTime${videoId.slice(-1)}`);
+            const duration = document.getElementById(`duration${videoId.slice(-1)}`);
+            
+            seekBar.value = video.currentTime;
+            currentTime.textContent = formatTime(video.currentTime);
+            duration.textContent = formatTime(video.duration);
+        });
+        
+        // Seek functionality
+        const seekBar = document.getElementById(`seekBar${videoId.slice(-1)}`);
+        seekBar.max = video.duration;
+        seekBar.addEventListener('input', () => {
+            video.currentTime = seekBar.value;
+        });
+    }
+    
+    // Function to toggle play/pause
+    function togglePlayPause(videoId) {
+        const video = document.getElementById(videoId);
+        const playPauseIcon = document.getElementById(`playPauseIcon${videoId.slice(-1)}`);
+        
+        if (video.paused) {
+            video.play();
+            playPauseIcon.classList.replace('fa-play', 'fa-pause');
+        } else {
+            video.pause();
+            playPauseIcon.classList.replace('fa-pause', 'fa-play');
+        }
+    }
+    
+    // Function to format time
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+// Initialize podcast controls
+document.addEventListener('DOMContentLoaded', () => {
+    // Set up event listeners for all podcasts
+    for (let i = 1; i <= 4; i++) {
+        const podcast = document.getElementById(`podcast${i}`);
+        const seekBar = document.getElementById(`podcastSeekBar${i}`);
+        const volumeControl = document.getElementById(`volumeControl${i}`);
+
+        // Set up seekbar when metadata is loaded
+        podcast.addEventListener('loadedmetadata', () => {
+            seekBar.max = podcast.duration;
+            document.getElementById(`podcastDuration${i}`).textContent = formatTime(podcast.duration);
+        });
+
+        // Update time and seekbar during playback
+        podcast.addEventListener('timeupdate', () => {
+            seekBar.value = podcast.currentTime;
+            document.getElementById(`podcastCurrentTime${i}`).textContent = formatTime(podcast.currentTime);
+            
+            // Reset when podcast ends
+            if (podcast.currentTime >= podcast.duration) {
+                document.getElementById(`podcastIcon${i}`).classList.replace('fa-pause', 'fa-play');
+                document.getElementById(`controlIcon${i}`).classList.replace('fa-pause', 'fa-play');
+            }
+        });
+
+        // Seek functionality
+        seekBar.addEventListener('input', () => {
+            podcast.currentTime = seekBar.value;
+        });
+
+        // Volume control
+        volumeControl.addEventListener('input', () => {
+            podcast.volume = volumeControl.value;
+        });
+    }
+});
+
+// Play podcast function
+function playPodcast(podcastId) {
+    const podcast = document.getElementById(podcastId);
+    const podcastNum = podcastId.slice(-1);
+    const controls = document.getElementById(`podcastControls${podcastNum}`);
+    
+    // Stop all other media first
+    document.querySelectorAll('audio').forEach(audio => {
+        if (audio.id !== podcastId) {
+            audio.pause();
+            const num = audio.id.slice(-1);
+            document.getElementById(`podcastIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`controlIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`podcastControls${num}`).classList.add('hidden');
+        }
+    });
+    
+    // Toggle play/pause
+    togglePlayPausePodcast(podcastId);
+    
+    // Show controls
+    controls.classList.remove('hidden');
+}
+
+// Toggle play/pause function
+function togglePlayPausePodcast(podcastId) {
+    const podcast = document.getElementById(podcastId);
+    const podcastNum = podcastId.slice(-1);
+    const podcastIcon = document.getElementById(`podcastIcon${podcastNum}`);
+    const controlIcon = document.getElementById(`controlIcon${podcastNum}`);
+    
+    if (podcast.paused) {
+        podcast.play();
+        podcastIcon.classList.replace('fa-play', 'fa-pause');
+        controlIcon.classList.replace('fa-play', 'fa-pause');
+    } else {
+        podcast.pause();
+        podcastIcon.classList.replace('fa-pause', 'fa-play');
+        controlIcon.classList.replace('fa-pause', 'fa-play');
+    }
+}
+
+// Adjust volume function
+function adjustVolume(podcastId, direction) {
+    const podcast = document.getElementById(podcastId);
+    const podcastNum = podcastId.slice(-1);
+    const volumeControl = document.getElementById(`volumeControl${podcastNum}`);
+    
+    let currentVolume = parseFloat(volumeControl.value);
+    
+    if (direction === 'up') {
+        currentVolume = Math.min(currentVolume + 0.1, 1);
+    } else {
+        currentVolume = Math.max(currentVolume - 0.1, 0);
+    }
+    
+    podcast.volume = currentVolume;
+    volumeControl.value = currentVolume;
+}
+
+// Helper function to format time
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    seconds = Math.floor(seconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Close section function
+function closeSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        // Stop all playing podcasts
+        document.querySelectorAll('audio').forEach(audio => {
+            audio.pause();
+            const num = audio.id.slice(-1);
+            document.getElementById(`podcastIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`controlIcon${num}`).classList.replace('fa-pause', 'fa-play');
+        });
+        
+        // Hide the section
+        section.style.display = 'none';
+    }
+}
+
+//Function to play audio
+        // Initialize audio controls
+document.addEventListener('DOMContentLoaded', () => {
+    // Set up event listeners for all audio sermons
+    for (let i = 1; i <= 4; i++) {
+        const audio = document.getElementById(`audio${i}`);
+        const seekBar = document.getElementById(`audioSeekBar${i}`);
+        const volumeControl = document.getElementById(`audioVolumeControl${i}`);
+        
+        // Set up seekbar when metadata is loaded
+        audio.addEventListener('loadedmetadata', () => {
+            seekBar.max = audio.duration;
+            document.getElementById(`audioDuration${i}`).textContent = formatTime(audio.duration);
+        });
+        
+        // Update time and seekbar during playback
+        audio.addEventListener('timeupdate', () => {
+            seekBar.value = audio.currentTime;
+            document.getElementById(`audioCurrentTime${i}`).textContent = formatTime(audio.currentTime);
+            
+            // Reset when audio ends
+            if (audio.currentTime >= audio.duration) {
+                document.getElementById(`audioIcon${i}`).classList.replace('fa-pause', 'fa-play');
+                document.getElementById(`audioControlIcon${i}`).classList.replace('fa-pause', 'fa-play');
+            }
+        });
+        
+        // Seek functionality
+        seekBar.addEventListener('input', () => {
+            audio.currentTime = seekBar.value;
+        });
+        
+        // Volume control
+        volumeControl.addEventListener('input', () => {
+            audio.volume = volumeControl.value;
+        });
+    }
+});
+
+// Play audio sermon function
+function playAudioSermon(audioId) {
+    const audio = document.getElementById(audioId);
+    const audioNum = audioId.slice(-1);
+    const controls = document.getElementById(`audioControls${audioNum}`);
+    
+    // Stop all other media first
+    document.querySelectorAll('audio').forEach(a => {
+        if (a.id !== audioId) {
+            a.pause();
+            const num = a.id.slice(-1);
+            document.getElementById(`audioIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`audioControlIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`audioControls${num}`).classList.add('hidden');
+        }
+    });
+    
+    // Toggle play/pause
+    toggleAudioSermon(audioId);
+    
+    // Show controls
+    controls.classList.remove('hidden');
+}
+
+// Toggle play/pause function
+function toggleAudioSermon(audioId) {
+    const audio = document.getElementById(audioId);
+    const audioNum = audioId.slice(-1);
+    const audioIcon = document.getElementById(`audioIcon${audioNum}`);
+    const controlIcon = document.getElementById(`audioControlIcon${audioNum}`);
+    
+    if (audio.paused) {
+        audio.play();
+        audioIcon.classList.replace('fa-play', 'fa-pause');
+        controlIcon.classList.replace('fa-play', 'fa-pause');
+    } else {
+        audio.pause();
+        audioIcon.classList.replace('fa-pause', 'fa-play');
+        controlIcon.classList.replace('fa-pause', 'fa-play');
+    }
+}
+
+// Adjust volume function
+function adjustAudioVolume(audioId, direction) {
+    const audio = document.getElementById(audioId);
+    const audioNum = audioId.slice(-1);
+    const volumeControl = document.getElementById(`audioVolumeControl${audioNum}`);
+    
+    if (direction === 'up' && audio.volume < 1) {
+        audio.volume = Math.min(1, audio.volume + 0.1);
+    } else if (direction === 'down' && audio.volume > 0) {
+        audio.volume = Math.max(0, audio.volume - 0.1);
+    }
+    
+    volumeControl.value = audio.volume;
+}
+
+// Helper function to format time
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Function to close section
+function closeSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        // Stop all playing audio
+        section.querySelectorAll('audio').forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+            const num = audio.id.slice(-1);
+            document.getElementById(`audioIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`audioControlIcon${num}`).classList.replace('fa-pause', 'fa-play');
+            document.getElementById(`audioControls${num}`).classList.add('hidden');
+        });
+        
+        section.classList.add('hidden');
+    }
+}
+        
+        
+        
+        
+        function toggleVideo(videoId) {
+            const video = document.getElementById(videoId);
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+    </script>
+</body>
+</html>

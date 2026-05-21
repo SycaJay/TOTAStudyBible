@@ -1,0 +1,7 @@
+Bundled KJV text source (public domain):
+https://github.com/aruljohn/Bible-kjv
+
+Files downloaded from raw.githubusercontent.com/aruljohn/Bible-kjv/master/*.json
+See assets/bible/kjv/LICENSE_aruljohn_Bible-kjv.txt
+
+Sample copy at project root: KJV_Genesis_sample.json
