@@ -127,34 +127,35 @@ jobs:
           fi
           echo "Using APK: $APK_SRC ($(du -h "$APK_SRC" | cut -f1))"
 
-          rm -rf deploy
-          mkdir -p deploy
-          cp "$APK_SRC" deploy/app.apk
-          printf '%s\n' "{" > deploy/version.json
-          printf '  "version": "%s",\n' "${{ steps.app_version.outputs.version }}" >> deploy/version.json
-          printf '  "apk_url": "%s"\n' "$APK_PUBLIC_URL" >> deploy/version.json
-          printf '%s\n' "}" >> deploy/version.json
-          ls -la deploy/
-          test -f deploy/app.apk
-          test -f deploy/version.json
+          rm -rf ftp-upload-apk
+          mkdir -p ftp-upload-apk
+          cp "$APK_SRC" ftp-upload-apk/app.apk
+          printf '%s\n' "{" > ftp-upload-apk/version.json
+          printf '  "version": "%s",\n' "${{ steps.app_version.outputs.version }}" >> ftp-upload-apk/version.json
+          printf '  "apk_url": "%s"\n' "$APK_PUBLIC_URL" >> ftp-upload-apk/version.json
+          printf '%s\n' "}" >> ftp-upload-apk/version.json
+          echo "APK FTP upload tree (root only — no windows/):"
+          ls -la ftp-upload-apk/
+          test -f ftp-upload-apk/app.apk
+          test -f ftp-upload-apk/version.json
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
           path: |
-            deploy/app.apk
-            deploy/version.json
+            ftp-upload-apk/app.apk
+            ftp-upload-apk/version.json
           if-no-files-found: error
 
-      # Hostinger FTP user usually lands in public_html already — do not set server-dir to public_html/.
+      # Hostinger FTP home = public_html. Upload only app.apk + root version.json.
       - name: Upload app.apk and version.json to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: deploy/
+          local-dir: ftp-upload-apk/
           server-dir: ./
           dangerous-clean-slate: false
           log-level: verbose

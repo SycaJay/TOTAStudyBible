@@ -1,0 +1,141 @@
+name: Build and Deploy macOS Installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+env:
+  MACOS_DMG_URL: https://studybible.totaonline.com/macos/TOTAStudyBible.dmg
+  MACOS_VERSION_JSON_URL: https://studybible.totaonline.com/macos/version.json
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Read app version from pubspec
+        id: app_version
+        run: |
+          set -euo pipefail
+          RAW=$(grep -E '^version:' pubspec.yaml | head -1 | sed 's/^version:[[:space:]]*//')
+          VERSION="${RAW%%+*}"
+          VERSION="${VERSION// /}"
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not read version from pubspec.yaml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "App version (pubspec): $VERSION"
+
+      - name: Restore Firebase and local config from secrets
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FIREBASE_OPTIONS_DART:-}" ]; then
+            echo "::error::Add FIREBASE_OPTIONS_DART in Repo → Settings → Secrets → Actions"
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
+          cp lib/bible/api_bible_local_key.example.dart lib/bible/api_bible_local_key.dart
+          if [ ! -f assets/bible/kjv/Genesis.json ]; then
+            echo "::error::assets/bible/ missing — commit bundled Bible JSON for macOS builds."
+            exit 1
+          fi
+
+      - name: Build macOS release
+        env:
+          API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
+        run: |
+          set -euo pipefail
+          EXTRA_DEFINE=()
+          if [ -n "${API_BIBLE_KEY:-}" ]; then
+            EXTRA_DEFINE+=(--dart-define=API_BIBLE_KEY="$API_BIBLE_KEY")
+          fi
+          flutter build macos --release "${EXTRA_DEFINE[@]}"
+
+      - name: Locate Release .app bundle
+        id: app_bundle
+        run: |
+          set -euo pipefail
+          RELEASE_DIR="build/macos/Build/Products/Release"
+          if [ ! -d "$RELEASE_DIR" ]; then
+            echo "::error::Release folder not found: $RELEASE_DIR"
+            exit 1
+          fi
+          APP=$(find "$RELEASE_DIR" -maxdepth 1 -name '*.app' -type d | head -1)
+          if [ -z "$APP" ]; then
+            echo "::error::No .app bundle in $RELEASE_DIR"
+            ls -la "$RELEASE_DIR"
+            exit 1
+          fi
+          echo "app=$APP" >> "$GITHUB_OUTPUT"
+          echo "Found app bundle: $APP"
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create TOTAStudyBible.dmg
+        run: |
+          set -euo pipefail
+          APP="${{ steps.app_bundle.outputs.app }}"
+          # Ad-hoc sign so the bundle can be packaged on CI.
+          codesign --force --deep --sign - "$APP"
+          rm -f TOTAStudyBible.dmg
+          create-dmg \
+            --volname "TOTA Study Bible" \
+            --window-pos 200 120 \
+            --window-size 540 320 \
+            --icon-size 100 \
+            --app-drop-link 240 170 \
+            "TOTAStudyBible.dmg" \
+            "$APP"
+          test -f TOTAStudyBible.dmg
+          ls -lh TOTAStudyBible.dmg
+
+      - name: Prepare Hostinger deploy files
+        run: |
+          set -euo pipefail
+          mkdir -p ftp-upload/macos
+          cp TOTAStudyBible.dmg ftp-upload/macos/TOTAStudyBible.dmg
+          cat > ftp-upload/macos/version.json <<EOF
+          {
+            "version": "${{ steps.app_version.outputs.version }}",
+            "macos_url": "${MACOS_DMG_URL}"
+          }
+          EOF
+          echo "FTP upload tree (must contain macos/ folder):"
+          find ftp-upload -type f -exec ls -lh {} \;
+
+      - name: Upload macOS installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: |
+            ftp-upload/macos/TOTAStudyBible.dmg
+            ftp-upload/macos/version.json
+          if-no-files-found: error
+
+      - name: Upload to Hostinger (macos folder only)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ftp-upload/
+          server-dir: ./
+          dangerous-clean-slate: false
+          log-level: verbose

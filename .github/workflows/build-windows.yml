@@ -120,33 +120,37 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          New-Item -ItemType Directory -Force -Path deploy/windows | Out-Null
-          Copy-Item -Path windows-installer/Output/TOTAStudyBible-Setup.exe -Destination deploy/windows/TOTAStudyBible-Setup.exe -Force
+          # Upload ftp-root/windows/* to FTP home (public_html) — creates public_html/windows/
+          $winDir = 'ftp-upload/windows'
+          New-Item -ItemType Directory -Force -Path $winDir | Out-Null
+          Copy-Item -Path windows-installer/Output/TOTAStudyBible-Setup.exe -Destination "$winDir/TOTAStudyBible-Setup.exe" -Force
           $version = '${{ steps.app_version.outputs.version }}'
           @"
           {
             "version": "$version",
             "windows_url": "$($env:WINDOWS_SETUP_URL)"
           }
-          "@ | Set-Content -Path deploy/windows/version.json -Encoding utf8
-          Get-ChildItem -Recurse deploy
+          "@ | Set-Content -Path "$winDir/version.json" -Encoding utf8
+          Write-Host 'FTP upload tree (must contain windows/ folder):'
+          Get-ChildItem -Recurse ftp-upload | Format-Table FullName, Length
 
       - name: Upload Windows installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: |
-            deploy/windows/TOTAStudyBible-Setup.exe
-            deploy/windows/version.json
+            ftp-upload/windows/TOTAStudyBible-Setup.exe
+            ftp-upload/windows/version.json
           if-no-files-found: error
 
+      # local-dir = ftp-upload/ + server-dir = ./  →  public_html/windows/... only (not app.apk)
       - name: Upload to Hostinger (windows folder only)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: deploy/windows/
-          server-dir: windows/
+          local-dir: ftp-upload/
+          server-dir: ./
           dangerous-clean-slate: false
           log-level: verbose
