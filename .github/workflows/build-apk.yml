@@ -56,6 +56,7 @@ jobs:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
           FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
           BIBLE_ASSETS_BASE64: ${{ secrets.BIBLE_ASSETS_BASE64 }}
+          API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
         run: |
           set -euo pipefail
 
@@ -68,21 +69,41 @@ jobs:
           printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
           cp lib/bible/api_bible_local_key.example.dart lib/bible/api_bible_local_key.dart
 
+          HAS_ASSETS=false
+          HAS_API=false
+          if [ -f assets/bible/kjv/Genesis.json ]; then
+            HAS_ASSETS=true
+            echo "Using bundled Bible JSON from repo (assets/bible/)."
+          fi
           if [ -n "${BIBLE_ASSETS_BASE64:-}" ]; then
             echo "$BIBLE_ASSETS_BASE64" | base64 -d > bible-assets.zip
             unzip -q -o bible-assets.zip -d .
             rm bible-assets.zip
-          else
-            echo "BIBLE_ASSETS_BASE64 not set — using minimal stub Bible JSON so the build can complete."
-            for id in kjv niv nkjv asv darby ylt webster geneva1599 douay1895 rv1895 web wmb; do
-              mkdir -p "assets/bible/$id"
-              printf '%s\n' '{"book":"Genesis","chapters":[{"chapter":"1","verses":[{"verse":"1","text":"In the beginning God created the heaven and the earth."}]}]}' \
-                > "assets/bible/$id/Genesis.json"
-            done
+            HAS_ASSETS=true
+            echo "Restored bundled Bible JSON from BIBLE_ASSETS_BASE64 secret."
+          fi
+          if [ -n "${API_BIBLE_KEY:-}" ]; then
+            HAS_API=true
+            echo "API_BIBLE_KEY is set (online Bible fallback / API-only versions)."
+          fi
+          if [ "$HAS_ASSETS" = false ] && [ "$HAS_API" = false ]; then
+            echo "::error::No Bible text for this build. Commit assets/bible/ to the repo (git add assets/bible) and push, or add BIBLE_ASSETS_BASE64 / API_BIBLE_KEY secrets."
+            exit 1
+          fi
+          if [ "$HAS_ASSETS" = false ]; then
+            echo "::warning::No assets/bible/ in build — APK will rely on API_BIBLE_KEY and the internet for scripture."
           fi
 
       - name: Build release APK
-        run: flutter build apk --release
+        env:
+          API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
+        run: |
+          set -euo pipefail
+          EXTRA_DEFINE=()
+          if [ -n "${API_BIBLE_KEY:-}" ]; then
+            EXTRA_DEFINE+=(--dart-define=API_BIBLE_KEY="$API_BIBLE_KEY")
+          fi
+          flutter build apk --release "${EXTRA_DEFINE[@]}"
 
       - name: Prepare Hostinger deploy files
         run: |

@@ -40,8 +40,9 @@ const List<BibleTranslation> kAllBibleTranslations = [
   BibleTranslation(
     id: 'kjv',
     label: 'KJV (King James Version)',
-    kind: BibleEditionKind.bundledLocal,
+    kind: BibleEditionKind.bundledOrApi,
     apiAbbreviation: 'KJV',
+    apiNameHint: 'king james',
   ),
   BibleTranslation(
     id: 'asv',

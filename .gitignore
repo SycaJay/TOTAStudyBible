@@ -47,20 +47,19 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Secrets & local config (keep *.example files in repo)
+# Secrets & local config (never commit keys/passwords here)
 .env
 .env.*
 *.pem
 *.p12
-**/google-services.json
-**/GoogleService-Info.plist
 **/firebase-adminsdk*.json
 **/*serviceAccount*.json
-lib/firebase_options.dart
 lib/bible/api_bible_local_key.dart
+lib/firebase_options.dart
+android/app/google-services.json
 
-# Docs / notes
+# Bundled Bible JSON under assets/bible/ is required in git for offline reading
+# and CI APK builds — do NOT add assets/bible/ here.
+
+# Docs / notes (optional local only)
 *.md
-
-# Bundled Bible JSON (large; add locally or via separate download)
-/assets/bible/
