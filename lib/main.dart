@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,7 +30,10 @@ import 'profile/profile_library_sections.dart';
 import 'widgets/google_sign_in_control.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  // Keep native splash visible while Firebase / prefs initialize (avoids white flash).
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
+
   await BibleApiConfig.ensureLoaded();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   configureFirestorePersistence();
@@ -38,9 +42,32 @@ Future<void> main() async {
   await appState.load();
   runApp(
     ProviderScope(
-      child: BibleApp(appState: appState),
+      child: _SplashGate(child: BibleApp(appState: appState)),
     ),
   );
+}
+
+/// Removes the native splash after the first Flutter frame is painted.
+class _SplashGate extends StatefulWidget {
+  const _SplashGate({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SplashGate> createState() => _SplashGateState();
+}
+
+class _SplashGateState extends State<_SplashGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class BibleApp extends StatelessWidget {
