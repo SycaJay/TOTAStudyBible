@@ -87,41 +87,53 @@ jobs:
       - name: Prepare Hostinger deploy files
         run: |
           set -euo pipefail
-          mkdir -p deploy-apk deploy-version
-          cp build/app/outputs/flutter-apk/app-release.apk deploy-apk/app.apk
-          printf '%s\n' "{" > deploy-version/version.json
-          printf '  "version": "%s",\n' "${{ steps.app_version.outputs.version }}" >> deploy-version/version.json
-          printf '  "apk_url": "%s"\n' "$APK_PUBLIC_URL" >> deploy-version/version.json
-          printf '%s\n' "}" >> deploy-version/version.json
-          echo "Deploy APK: deploy-apk/app.apk"
-          echo "Generated version.json (upload when enabled):"
-          cat deploy-version/version.json
+          APK_SRC=""
+          for candidate in \
+            build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/apk/release/app-release.apk; do
+            if [ -f "$candidate" ]; then
+              APK_SRC="$candidate"
+              break
+            fi
+          done
+          if [ -z "$APK_SRC" ]; then
+            APK_SRC="$(find build/app/outputs -type f -name 'app-release.apk' 2>/dev/null | head -1 || true)"
+          fi
+          if [ -z "$APK_SRC" ] || [ ! -f "$APK_SRC" ]; then
+            echo "::error::Release APK not found under build/app/outputs"
+            find build/app/outputs -type f -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          echo "Using APK: $APK_SRC ($(du -h "$APK_SRC" | cut -f1))"
+
+          rm -rf deploy
+          mkdir -p deploy
+          cp "$APK_SRC" deploy/app.apk
+          printf '%s\n' "{" > deploy/version.json
+          printf '  "version": "%s",\n' "${{ steps.app_version.outputs.version }}" >> deploy/version.json
+          printf '  "apk_url": "%s"\n' "$APK_PUBLIC_URL" >> deploy/version.json
+          printf '%s\n' "}" >> deploy/version.json
+          ls -la deploy/
+          test -f deploy/app.apk
+          test -f deploy/version.json
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
           path: |
-            deploy-apk/app.apk
-            deploy-version/version.json
+            deploy/app.apk
+            deploy/version.json
           if-no-files-found: error
 
-      - name: Upload APK to Hostinger
+      # Hostinger FTP user usually lands in public_html already — do not set server-dir to public_html/.
+      - name: Upload app.apk and version.json to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: deploy-apk/
-          server-dir: public_html/
+          local-dir: deploy/
+          server-dir: ./
           dangerous-clean-slate: false
-
-      - name: Upload version.json to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: deploy-version/
-          server-dir: public_html/
-          dangerous-clean-slate: false
+          log-level: verbose
