@@ -1,0 +1,152 @@
+name: Build and Deploy Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+env:
+  WINDOWS_SETUP_URL: https://studybible.totaonline.com/windows/TOTAStudyBible-Setup.exe
+  WINDOWS_VERSION_JSON_URL: https://studybible.totaonline.com/windows/version.json
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Read app version from pubspec
+        id: app_version
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $raw = (Select-String -Path pubspec.yaml -Pattern '^version:' | Select-Object -First 1).Line -replace '^version:\s*', ''
+          $version = $raw.Split('+')[0].Trim()
+          if (-not $version) { throw 'Could not read version from pubspec.yaml' }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "App version (pubspec): $version"
+
+      - name: Restore Firebase and local config from secrets
+        shell: pwsh
+        env:
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
+          API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not $env:FIREBASE_OPTIONS_DART) {
+            throw 'Add FIREBASE_OPTIONS_DART in Repo → Settings → Secrets → Actions'
+          }
+          Set-Content -Path lib/firebase_options.dart -Value $env:FIREBASE_OPTIONS_DART -NoNewline
+          Copy-Item lib/bible/api_bible_local_key.example.dart lib/bible/api_bible_local_key.dart -Force
+          if (-not (Test-Path assets/bible/kjv/Genesis.json)) {
+            throw 'assets/bible/ missing — commit bundled Bible JSON for Windows builds.'
+          }
+
+      - name: Build Windows release
+        shell: pwsh
+        env:
+          API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $args = @('build', 'windows', '--release')
+          if ($env:API_BIBLE_KEY) {
+            $args += "--dart-define=API_BIBLE_KEY=$($env:API_BIBLE_KEY)"
+          }
+          flutter @args
+
+      - name: Resolve Windows Release output path
+        id: release_dir
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $candidates = @(
+            'build/windows/x64/runner/Release',
+            'build/windows/runner/Release'
+          )
+          $dir = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $dir) {
+            throw 'Windows Release folder not found under build/windows'
+          }
+          "dir=$dir" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Release dir: $dir"
+
+      - name: Prepare files for Inno Setup (setup.iss paths)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = '${{ steps.release_dir.outputs.dir }}'
+          $dest = 'windows-installer/build/windows/runner/Release'
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item -Path "$src/*" -Destination $dest -Recurse -Force
+          $builtExe = Get-ChildItem -Path $dest -Filter '*.exe' | Where-Object { $_.Name -notlike 'flutter_*' } | Select-Object -First 1
+          if (-not $builtExe) { throw 'No app .exe found in Release output' }
+          $target = Join-Path $dest 'TOTAStudyBible.exe'
+          if ($builtExe.FullName -ne $target) {
+            Copy-Item -Path $builtExe.FullName -Destination $target -Force
+          }
+          Write-Host "Installer payload exe: $target"
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer with setup.iss
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) { throw "ISCC not found at $iscc" }
+          Push-Location windows-installer
+          try {
+            & $iscc 'setup.iss'
+          } finally {
+            Pop-Location
+          }
+          $installer = 'windows-installer/Output/TOTAStudyBible-Setup.exe'
+          if (-not (Test-Path $installer)) { throw "Installer not found: $installer" }
+          Write-Host "Built installer: $installer"
+
+      - name: Prepare Hostinger deploy files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path deploy/windows | Out-Null
+          Copy-Item -Path windows-installer/Output/TOTAStudyBible-Setup.exe -Destination deploy/windows/TOTAStudyBible-Setup.exe -Force
+          $version = '${{ steps.app_version.outputs.version }}'
+          @"
+          {
+            "version": "$version",
+            "windows_url": "$($env:WINDOWS_SETUP_URL)"
+          }
+          "@ | Set-Content -Path deploy/windows/version.json -Encoding utf8
+          Get-ChildItem -Recurse deploy
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: |
+            deploy/windows/TOTAStudyBible-Setup.exe
+            deploy/windows/version.json
+          if-no-files-found: error
+
+      - name: Upload to Hostinger (windows folder only)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: deploy/windows/
+          server-dir: windows/
+          dangerous-clean-slate: false
+          log-level: verbose
