@@ -1,6 +1,105 @@
 import 'package:flutter/material.dart';
 
+import '../app_colors.dart';
 import 'verse_annotations_repository.dart';
+
+/// Highlight, note, bookmark, or copy — returned when the user picks an action.
+Future<String?> showVerseActionsSheet(
+  BuildContext context, {
+  required int verseNumber,
+  String? subtitle,
+}) {
+  return showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    backgroundColor: Colors.white,
+    builder: (ctx) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                child: Column(
+                  children: [
+                    Text(
+                      'Verse $verseNumber',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    if (subtitle != null && subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.inkMuted,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const _VerseActionTile(
+                value: 'Highlight',
+                icon: Icons.highlight_outlined,
+                label: 'Highlight',
+              ),
+              const _VerseActionTile(
+                value: 'Note',
+                icon: Icons.note_alt_outlined,
+                label: 'Note',
+              ),
+              const _VerseActionTile(
+                value: 'Bookmark',
+                icon: Icons.bookmark_border,
+                label: 'Bookmark',
+              ),
+              const _VerseActionTile(
+                value: 'Copy',
+                icon: Icons.copy_outlined,
+                label: 'Copy',
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _VerseActionTile extends StatelessWidget {
+  const _VerseActionTile({
+    required this.value,
+    required this.icon,
+    required this.label,
+  });
+
+  final String value;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.accentBlueDeep),
+      title: Text(
+        label,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppColors.ink,
+        ),
+      ),
+      onTap: () => Navigator.of(context).pop(value),
+    );
+  }
+}
 
 /// Compact row of 7 highlight colours.
 Future<int?> showHighlightColorPicker(BuildContext context) {

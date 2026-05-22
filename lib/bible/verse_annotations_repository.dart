@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
+import '../study/user_study_library.dart';
+
 class VerseNote {
   const VerseNote({
     required this.id,
@@ -193,6 +195,185 @@ class VerseAnnotationsRepository {
           book: book,
           chapter: chapter,
           translationId: translationId,
+          highlights: hSnap,
+          notes: nSnap,
+          bookmarks: bSnap,
+        ),
+      );
+    }
+
+    controller.onListen = () => emit();
+
+    final subs = <StreamSubscription<QuerySnapshot<Map<String, dynamic>>>>[
+      highlights.snapshots().listen(
+        (s) {
+          hSnap = s;
+          emit();
+        },
+        onError: (e) {
+          if (kDebugMode) debugPrint('highlights stream: $e');
+          hSnap = null;
+          emit();
+        },
+      ),
+      notes.snapshots().listen(
+        (s) {
+          nSnap = s;
+          emit();
+        },
+        onError: (e) {
+          if (kDebugMode) debugPrint('notes stream: $e');
+          nSnap = null;
+          emit();
+        },
+      ),
+      bookmarks.snapshots().listen(
+        (s) {
+          bSnap = s;
+          emit();
+        },
+        onError: (e) {
+          if (kDebugMode) debugPrint('bookmarks stream: $e');
+          bSnap = null;
+          emit();
+        },
+      ),
+    ];
+
+    controller.onCancel = () async {
+      for (final sub in subs) {
+        await sub.cancel();
+      }
+    };
+
+    return controller.stream;
+  }
+
+  static DateTime _updatedAtFrom(dynamic ts) =>
+      ts is Timestamp ? ts.toDate() : DateTime.now();
+
+  static SavedBookmark? _bookmarkFromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final d = doc.data();
+    if (d == null) return null;
+    final book = d['book'] as String?;
+    final chapter = _asInt(d['chapter']);
+    final verse = _asInt(d['verse']);
+    final translationId = d['translationId'] as String?;
+    if (book == null ||
+        book.isEmpty ||
+        chapter == null ||
+        chapter < 1 ||
+        verse == null ||
+        verse < 1 ||
+        translationId == null ||
+        translationId.isEmpty) {
+      return null;
+    }
+    return SavedBookmark(
+      book: book,
+      chapter: chapter,
+      verse: verse,
+      translationId: translationId,
+      updatedAt: _updatedAtFrom(d['updatedAt']),
+    );
+  }
+
+  static SavedStudyNote? _noteFromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final d = doc.data();
+    if (d == null) return null;
+    final book = d['book'] as String?;
+    final chapter = _asInt(d['chapter']);
+    final verse = _asInt(d['verse']);
+    final translationId = d['translationId'] as String?;
+    if (book == null ||
+        book.isEmpty ||
+        chapter == null ||
+        chapter < 1 ||
+        verse == null ||
+        verse < 1 ||
+        translationId == null ||
+        translationId.isEmpty) {
+      return null;
+    }
+    return SavedStudyNote(
+      id: doc.id,
+      book: book,
+      chapter: chapter,
+      verse: verse,
+      translationId: translationId,
+      text: d['text'] as String? ?? '',
+      isDraft: d['isDraft'] as bool? ?? false,
+      updatedAt: _updatedAtFrom(d['updatedAt']),
+    );
+  }
+
+  static UserStudyLibrary _buildLibraryFromSnapshots({
+    required QuerySnapshot<Map<String, dynamic>>? highlights,
+    required QuerySnapshot<Map<String, dynamic>>? notes,
+    required QuerySnapshot<Map<String, dynamic>>? bookmarks,
+  }) {
+    final highlightColorByKey = <String, int>{};
+    for (final doc in highlights?.docs ?? const []) {
+      final d = doc.data();
+      final book = d['book'] as String?;
+      final chapter = _asInt(d['chapter']);
+      final verse = _asInt(d['verse']);
+      final translationId = d['translationId'] as String?;
+      final c = _asInt(d['colorIndex']);
+      if (book == null ||
+          chapter == null ||
+          verse == null ||
+          translationId == null ||
+          c == null ||
+          c < 0 ||
+          c >= highlightColors.length) {
+        continue;
+      }
+      highlightColorByKey['$translationId|$book|$chapter|$verse'] = c;
+    }
+
+    final bookmarkList = <SavedBookmark>[];
+    for (final doc in bookmarks?.docs ?? const []) {
+      final b = _bookmarkFromDoc(doc);
+      if (b != null) bookmarkList.add(b);
+    }
+    bookmarkList.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    final noteList = <SavedStudyNote>[];
+    for (final doc in notes?.docs ?? const []) {
+      final n = _noteFromDoc(doc);
+      if (n != null) noteList.add(n);
+    }
+    noteList.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    return UserStudyLibrary(
+      bookmarks: bookmarkList,
+      notes: noteList,
+      highlightColorByKey: highlightColorByKey,
+    );
+  }
+
+  /// Live library for profile and chapter views (one listener set per user).
+  Stream<UserStudyLibrary> watchLibrary() {
+    final highlights = _col('highlights');
+    final notes = _col('notes');
+    final bookmarks = _col('bookmarks');
+    if (highlights == null || notes == null || bookmarks == null) {
+      return Stream.value(UserStudyLibrary.empty);
+    }
+
+    final controller = StreamController<UserStudyLibrary>();
+    QuerySnapshot<Map<String, dynamic>>? hSnap;
+    QuerySnapshot<Map<String, dynamic>>? nSnap;
+    QuerySnapshot<Map<String, dynamic>>? bSnap;
+
+    void emit() {
+      controller.add(
+        _buildLibraryFromSnapshots(
           highlights: hSnap,
           notes: nSnap,
           bookmarks: bSnap,

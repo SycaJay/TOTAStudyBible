@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 
 import 'fcm_constants.dart';
 
@@ -17,6 +18,8 @@ void configureFirestorePersistence() {
 /// Registers for FCM (permission + token) and subscribes every install to the
 /// daily verse topic (no sign-in). Scheduled sends: [functions/index.js] 06:00 UTC.
 Future<void> setupFcm() async {
+  if (kIsWeb) return;
+
   final messaging = FirebaseMessaging.instance;
   try {
     await messaging.requestPermission();

@@ -175,11 +175,7 @@ Future<void> main() async {
     if (bundleId.isEmpty) throw StateError('$dayKey: bundle_id required');
     if (spec.isEmpty) throw StateError('$dayKey: scripture_spec required');
 
-    final dtUpper = displayTranslation.toUpperCase();
-    final note = bundleId == 'web' && dtUpper != 'WEB'
-        ? ' — text from WEB (no bundled $displayTranslation)'
-        : '';
-    final refLabel = '$spec ($displayTranslation)$note';
+    final refLabel = '$spec ($displayTranslation)';
     final text = await _composeDay(root, bundleId, spec, canonSorted);
     out[dayKey] = {
       'devotional_topic': topic,

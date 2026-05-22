@@ -6,6 +6,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import '../config/studio_catalog_config.dart';
+import '../user_messages.dart';
+import 'studio_media_player.dart';
 
 class StudioMediaItem {
   const StudioMediaItem({required this.title, required this.url});
@@ -41,16 +43,24 @@ class StudioCatalogRepository {
     return out;
   }
 
+  static StudioCatalog _audioOnly(StudioCatalog catalog) {
+    final items =
+        catalog.items.where((i) => studioMediaIsAudio(i.url)).toList();
+    return StudioCatalog(items: items);
+  }
+
   static StudioCatalog _catalogFromMap(Map<String, dynamic> map) {
     final items = _parseItems(map['items']);
     if (items.isNotEmpty) {
-      return StudioCatalog(items: items);
+      return _audioOnly(StudioCatalog(items: items));
     }
-    return StudioCatalog(
-      items: [
-        ..._parseItems(map['videos']),
-        ..._parseItems(map['audio']),
-      ],
+    return _audioOnly(
+      StudioCatalog(
+        items: [
+          ..._parseItems(map['videos']),
+          ..._parseItems(map['audio']),
+        ],
+      ),
     );
   }
 
@@ -77,15 +87,14 @@ class StudioCatalogRepository {
   static StudioCatalog parseStudioPageHtml(String html) {
     final media = <String>[];
     final mediaRe = RegExp(
-      r'<(?:video|audio)\b[^>]*\bsrc="([^"]+)"|<source\b[^>]*\bsrc="([^"]+)"',
+      r'<audio\b[^>]*\bsrc="([^"]+)"|<source\b[^>]*\bsrc="([^"]+)"',
       caseSensitive: false,
     );
     final seen = <String>{};
     for (final m in mediaRe.allMatches(html)) {
       final path = m.group(1) ?? m.group(2);
       if (path == null || path.isEmpty) continue;
-      if (!RegExp(r'\.(mp3|mp4|m4a|webm|ogg)$', caseSensitive: false)
-          .hasMatch(path)) {
+      if (!RegExp(r'\.(mp3|m4a|ogg|wav)$', caseSensitive: false).hasMatch(path)) {
         continue;
       }
       final url = _resolveMediaUrl(path);
@@ -111,7 +120,7 @@ class StudioCatalogRepository {
       final file = media[i].split('/').last;
       items.add(StudioMediaItem(title: file, url: media[i]));
     }
-    return StudioCatalog(items: items);
+    return _audioOnly(StudioCatalog(items: items));
   }
 
   static Future<StudioCatalog> _loadFromStudioPage() async {
@@ -182,8 +191,8 @@ class StudioCatalogRepository {
         if (catalog.items.isNotEmpty) {
           return (catalog: catalog, error: null);
         }
-      } catch (e) {
-        return (catalog: StudioCatalog.empty, error: '$e');
+      } catch (_) {
+        return (catalog: StudioCatalog.empty, error: UserMessages.studioLoad);
       }
     }
 
@@ -200,10 +209,7 @@ class StudioCatalogRepository {
       try {
         final fromAsset = await _loadFromAsset();
         if (fromAsset.items.isNotEmpty) {
-          return (
-            catalog: fromAsset,
-            error: 'Offline — showing saved list. Connect to load live from the studio.',
-          );
+          return (catalog: fromAsset, error: null);
         }
       } catch (_) {}
       try {
@@ -212,7 +218,7 @@ class StudioCatalogRepository {
           return (catalog: catalog, error: null);
         }
       } catch (_) {}
-      return (catalog: StudioCatalog.empty, error: '$e');
+      return (catalog: StudioCatalog.empty, error: UserMessages.studioLoad);
     }
   }
 }

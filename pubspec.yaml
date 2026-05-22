@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_riverpod: ^2.6.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -39,7 +40,10 @@ dependencies:
   firebase_core: ^3.8.1
   firebase_messaging: ^15.1.6
   google_sign_in: ^6.2.4
+  google_sign_in_web: ^0.12.4
   http: ^1.4.0
+  package_info_plus: ^8.3.0
+  video_player: ^2.10.0
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.1
 
@@ -127,11 +131,11 @@ flutter_launcher_icons:
     generate: true
 
 flutter_native_splash:
-  color: "#000000"
+  color: "#FFFFFF"
   image: assets/images/bible_app_logo.png
   android: true
   ios: true
   web: true
   android_12:
-    color: "#000000"
+    color: "#FFFFFF"
     image: assets/images/bible_app_logo.png

@@ -2,6 +2,9 @@ import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'app_colors.dart';
@@ -17,10 +20,12 @@ import 'bible/bible_repository.dart';
 import 'bible/chapter_ref.dart';
 import 'bible/bible_versions.dart';
 import 'bible/chapter_reader_screen.dart';
+import 'bible/verse_action_sheets.dart';
 import 'firebase_bootstrap.dart';
 import 'firebase_options.dart';
 import 'onboarding_flow.dart';
-import 'widgets/official_google_sign_in_button.dart';
+import 'profile/profile_library_sections.dart';
+import 'widgets/google_sign_in_control.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +35,11 @@ Future<void> main() async {
   await setupFcm();
   final appState = AppState();
   await appState.load();
-  runApp(BibleApp(appState: appState));
+  runApp(
+    ProviderScope(
+      child: BibleApp(appState: appState),
+    ),
+  );
 }
 
 class BibleApp extends StatelessWidget {
@@ -408,7 +417,7 @@ class HomeScreen extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Saved for your account (syncs with Firebase later).',
+                                  'Saved to your account.',
                                 ),
                               ),
                             );
@@ -958,6 +967,158 @@ class PrayerScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _editJournal(
+    BuildContext context,
+    AppState app,
+    int index,
+  ) async {
+    if (!app.signedIn) return;
+    final controller = TextEditingController(text: app.journalTopics[index]);
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit journal topic'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'e.g. Gratitude, family, healing',
+          ),
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    final topic = controller.text;
+    controller.dispose();
+    if (saved == true && context.mounted) {
+      await app.updateJournalTopicAt(index, topic);
+    }
+  }
+
+  Future<void> _deleteJournal(
+    BuildContext context,
+    AppState app,
+    int index,
+  ) async {
+    if (!app.signedIn) return;
+    final topic = app.journalTopics[index];
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove topic?'),
+        content: Text('Remove “$topic” from your journal?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await app.removeJournalTopicAt(index);
+    }
+  }
+
+  Future<void> _editPrayerRequest(
+    BuildContext context,
+    AppState app,
+    int index,
+  ) async {
+    if (!app.signedIn) return;
+    final entry = app.prayerRequests[index];
+    final titleC = TextEditingController(text: entry.title);
+    final detailC = TextEditingController(text: entry.detail);
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit prayer request'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleC,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: detailC,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Details',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    final title = titleC.text;
+    final detail = detailC.text;
+    titleC.dispose();
+    detailC.dispose();
+    if (saved == true && context.mounted) {
+      await app.updatePrayerRequestAt(index, title, detail);
+    }
+  }
+
+  Future<void> _deletePrayerRequest(
+    BuildContext context,
+    AppState app,
+    int index,
+  ) async {
+    if (!app.signedIn) return;
+    final title = app.prayerRequests[index].title;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove request?'),
+        content: Text('Remove “$title” from your prayer list?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await app.removePrayerRequestAt(index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -977,18 +1138,17 @@ class PrayerScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'This is your private space to capture what you are praying about — '
-                    'themes, gratitude, verses that stood out, or seasons you are walking through. '
-                    'Add a line whenever something comes to mind so you can revisit it later. '
-                    'Sign in first so your journal stays with your account.',
-                    style: TextStyle(
-                      height: 1.55,
-                      color: AppColors.inkMuted,
-                      fontSize: 15,
+                  if (app.signedIn && app.journalTopics.isEmpty) ...[
+                    Text(
+                      'Add topics you are praying about — gratitude, family, healing, and more.',
+                      style: TextStyle(
+                        height: 1.45,
+                        color: AppColors.inkMuted,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                  ],
                   Align(
                     alignment: Alignment.centerLeft,
                     child: FilledButton.tonalIcon(
@@ -999,15 +1159,32 @@ class PrayerScreen extends StatelessWidget {
                   ),
                   if (app.signedIn && app.journalTopics.isNotEmpty) ...[
                     const SizedBox(height: 14),
-                    for (final t in app.journalTopics)
+                    for (var i = 0; i < app.journalTopics.length; i++)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.fiber_manual_record, size: 10),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
+                              child: Icon(Icons.fiber_manual_record, size: 10),
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: Text(t)),
+                            Expanded(child: Text(app.journalTopics[i])),
+                            IconButton(
+                              tooltip: 'Edit',
+                              visualDensity: VisualDensity.compact,
+                              onPressed: () =>
+                                  _editJournal(context, app, i),
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                            ),
+                            IconButton(
+                              tooltip: 'Remove',
+                              visualDensity: VisualDensity.compact,
+                              onPressed: () =>
+                                  _deleteJournal(context, app, i),
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                            ),
                           ],
                         ),
                       ),
@@ -1022,18 +1199,17 @@ class PrayerScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Use requests for names and needs you do not want to forget — '
-                    'family, friends, health, work, or anything you are carrying to God. '
-                    'Add a short title and a few details, then come back to pray over them. '
-                    'Sign in so your list is saved to your account.',
-                    style: TextStyle(
-                      height: 1.55,
-                      color: AppColors.inkMuted,
-                      fontSize: 15,
+                  if (app.signedIn && app.prayerRequests.isEmpty) ...[
+                    Text(
+                      'Add a title and a few details for each person or need you want to pray for.',
+                      style: TextStyle(
+                        height: 1.45,
+                        color: AppColors.inkMuted,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                  ],
                   FilledButton.tonalIcon(
                     onPressed: () => _addPrayerRequest(context, app),
                     icon: const Icon(Icons.volunteer_activism_outlined),
@@ -1041,12 +1217,15 @@ class PrayerScreen extends StatelessWidget {
                   ),
                   if (app.signedIn && app.prayerRequests.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    for (final r in app.prayerRequests)
+                    for (var i = 0; i < app.prayerRequests.length; i++)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: _PrayerRequestTile(
-                          name: r.title,
-                          detail: r.detail,
+                          name: app.prayerRequests[i].title,
+                          detail: app.prayerRequests[i].detail,
+                          onEdit: () => _editPrayerRequest(context, app, i),
+                          onDelete: () =>
+                              _deletePrayerRequest(context, app, i),
                         ),
                       ),
                   ],
@@ -1082,6 +1261,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final ok = t != null && translationAvailableNow(t, api);
       setState(() => _defaultTranslationId = ok ? id : 'kjv');
     });
+  }
+
+  Future<void> _completeGoogleFromProfile(GoogleSignInAccount account) async {
+    final app = AppStateScope.of(context);
+    setState(() {
+      _profileGoogleError = null;
+      _profileGoogleBusy = true;
+    });
+    try {
+      await app.signInWithGoogleAccount(account);
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (mounted) {
+        setState(() => _profileGoogleError = friendlySignInErrorMessage(e));
+      }
+    } finally {
+      if (mounted) setState(() => _profileGoogleBusy = false);
+    }
   }
 
   Future<void> _signInWithGoogleFromProfile() async {
@@ -1149,7 +1346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         SnackBar(
                           content: Text(
                             translationNeedsApiKey(t)
-                                ? 'That Bible isn’t wired into this app build yet. Pick another version.'
+                                ? 'That Bible version isn’t available yet. Pick another version.'
                                 : '${t.label.split('(').first.trim()} will be available soon.',
                           ),
                         ),
@@ -1220,8 +1417,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Sign in with Google to sync notes, bookmarks, '
-                                'and prayer requests.',
+                                'Sign in with Google to save your notes, '
+                                'bookmarks, and prayer requests.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   height: 1.5,
@@ -1242,10 +1439,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const SizedBox(height: 16),
                               ],
-                              OfficialGoogleSignInButton(
+                              GoogleSignInControl(
+                                googleSignIn: app.googleSignIn,
                                 busy: _profileGoogleBusy,
-                                onPressed: _signInWithGoogleFromProfile,
                                 height: 48,
+                                enabled: !app.signedIn,
+                                onGoogleAccount: _completeGoogleFromProfile,
+                                onMobileSignIn: _signInWithGoogleFromProfile,
                               ),
                             ],
                           ),
@@ -1301,30 +1501,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            const _SectionTitle('Bookmarks'),
-            const SizedBox(height: 10),
-            const _GlassCard(
-              child: Text(
-                'Verses you save will show here once sync is connected.',
-                style: TextStyle(height: 1.55),
-              ),
-            ),
-            const SizedBox(height: 14),
-            const _SectionTitle('Notes'),
-            const SizedBox(height: 10),
-            const _GlassCard(
-              child: Text(
-                'Study notes will appear here from your library in the cloud.',
-                style: TextStyle(height: 1.55),
-              ),
-            ),
+            const ProfileLibrarySections(),
             const SizedBox(height: 18),
             const _SectionTitle('Reading activity'),
             const SizedBox(height: 10),
-            const _GlassCard(
+            _GlassCard(
               child: Text(
-                'Your reading stats will show up here.',
-                style: TextStyle(height: 1.55),
+                app.hasLastRead
+                    ? 'Last read: ${app.lastReadBook} ${app.lastReadChapter}'
+                    : 'Your reading progress will appear here as you read.',
+                style: TextStyle(height: 1.55, color: AppColors.inkMuted),
               ),
             ),
             const SizedBox(height: 12),
@@ -1458,10 +1644,17 @@ class _ReadingCard extends StatelessWidget {
 }
 
 class _PrayerRequestTile extends StatelessWidget {
-  const _PrayerRequestTile({required this.name, required this.detail});
+  const _PrayerRequestTile({
+    required this.name,
+    required this.detail,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   final String name;
   final String detail;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -1483,6 +1676,18 @@ class _PrayerRequestTile extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            tooltip: 'Edit',
+            visualDensity: VisualDensity.compact,
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined, size: 20),
+          ),
+          IconButton(
+            tooltip: 'Remove',
+            visualDensity: VisualDensity.compact,
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline, size: 20),
           ),
         ],
       ),
@@ -1706,7 +1911,7 @@ class ReaderExperienceScreen extends StatefulWidget {
 }
 
 class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
-  final Set<int> _selectedIndices = {};
+  int? _selectedVerse;
   bool _focusMode = false;
   String _mode = 'Dark';
   /// Not `late`: hot reload keeps [State] but does not re-run [initState], which
@@ -1732,7 +1937,7 @@ class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.title != widget.title) {
       _title = widget.title;
-      _selectedIndices.clear();
+      _selectedVerse = null;
     }
   }
 
@@ -1773,27 +1978,24 @@ class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
       itemBuilder: (context, index) {
         final vn = entries[index].key;
         final verseText = entries[index].value;
-        final isSelected = _selectedIndices.contains(index);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isSelected) {
-                _selectedIndices.remove(index);
-              } else {
-                _selectedIndices.add(index);
-              }
-            });
-          },
-          onLongPress: () => _openVerseActions(context, vn),
-          child: AnimatedContainer(
+        final selected = _selectedVerse == vn;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => _onVerseTapped(context, vn, verseText),
+            child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isSelected
+              color: selected
                   ? AppColors.accentIndicator28
                   : textColor.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(12),
+              border: selected
+                  ? Border.all(color: AppColors.accentBlue, width: 2)
+                  : null,
             ),
             child: RichText(
               text: TextSpan(
@@ -1810,6 +2012,7 @@ class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
                 ],
               ),
             ),
+          ),
           ),
         );
       },
@@ -1844,7 +2047,7 @@ class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
       if (!mounted) return;
       setState(() {
         _title = '${ref.bookDisplayName} $next';
-        _selectedIndices.clear();
+        _selectedVerse = null;
       });
     } catch (e) {
       if (!mounted) return;
@@ -1887,7 +2090,7 @@ class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
                 child: Text(
                   'Open a passage from the Bible tab first, or use a title like '
                   '"Romans 8" so verses can load from your bundled text. '
-                  'Topic search will connect to the cloud later.',
+                  'Search by topic is coming soon.',
                   textAlign: TextAlign.center,
                   style: TextStyle(height: 1.5, color: textColor),
                 ),
@@ -2015,57 +2218,57 @@ class _ReaderExperienceScreenState extends State<ReaderExperienceScreen> {
     );
   }
 
-  Future<void> _openVerseActions(BuildContext context, int verseNumber) async {
-    if (!await ensureSignedIn(context)) return;
+  Future<void> _onVerseTapped(
+    BuildContext context,
+    int verseNumber,
+    String verseText,
+  ) async {
+    final ref = tryParseChapterRef(_title);
+    setState(() => _selectedVerse = verseNumber);
+    final tid = await BiblePrefs.instance.getDefaultTranslationId();
+    final version =
+        translationById(tid)?.label.split('(').first.trim() ??
+        tid.toUpperCase();
+    final subtitle = ref == null
+        ? null
+        : '${ref.bookDisplayName} ${ref.chapter}:$verseNumber · $version';
+
     if (!context.mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: const Color(0xFF15171E),
-      builder: (_) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Verse $verseNumber',
-                  style: const TextStyle(fontSize: 18, color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                const Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _ActionChip(icon: Icons.highlight, label: 'Highlight'),
-                    _ActionChip(icon: Icons.note_alt_outlined, label: 'Note'),
-                    _ActionChip(icon: Icons.bookmark_border, label: 'Bookmark'),
-                    _ActionChip(icon: Icons.share_outlined, label: 'Share'),
-                    _ActionChip(icon: Icons.compare_arrows, label: 'Compare'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    final action = await showVerseActionsSheet(
+      context,
+      verseNumber: verseNumber,
+      subtitle: subtitle,
     );
-  }
-}
+    if (!mounted) return;
+    setState(() => _selectedVerse = null);
+    if (action == null || !context.mounted) return;
 
-class _ActionChip extends StatelessWidget {
-  const _ActionChip({required this.icon, required this.label});
+    if (action == 'Copy') {
+      if (ref == null) return;
+      final reference =
+          '${ref.bookDisplayName} ${ref.chapter}:$verseNumber\n$version';
+      final payload = '${verseText.trim()}\n\n$reference';
+      await Clipboard.setData(ClipboardData(text: payload));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Verse copied'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
-      onPressed: () => Navigator.of(context).pop(),
+    if (!await ensureSignedIn(context)) return;
+    if (!context.mounted || ref == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChapterReaderScreen(
+          bookDisplayName: ref.bookDisplayName,
+          chapter: ref.chapter,
+        ),
+      ),
     );
   }
 }

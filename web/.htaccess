@@ -1,0 +1,13 @@
+# Flutter web on Apache (e.g. Hostinger): correct MIME types for JS/WASM.
+AddType application/javascript .js
+AddType application/wasm .wasm
+AddType application/json .json
+
+# SPA: serve index.html for unknown routes (optional if app uses path URLs).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>

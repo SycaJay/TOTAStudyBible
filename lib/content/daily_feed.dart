@@ -5,6 +5,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Strips internal build notes from scripture references (e.g. WEB fallback hints).
+String sanitizeScriptureReference(String reference) {
+  return reference
+      .replaceFirst(
+        RegExp(r'\s*[—–-]\s*text from WEB.*$', caseSensitive: false),
+        '',
+      )
+      .replaceFirst(
+        RegExp(r'\s*\(no bundled [^)]+\)', caseSensitive: false),
+        '',
+      )
+      .trim();
+}
+
 class DailyVerseBlock {
   const DailyVerseBlock({
     required this.text,
@@ -23,9 +37,10 @@ class DailyVerseBlock {
   };
 
   factory DailyVerseBlock.fromJson(Map<String, dynamic> j) {
+    final rawRef = j['reference'] as String? ?? '';
     return DailyVerseBlock(
       text: j['text'] as String? ?? '',
-      reference: j['reference'] as String? ?? '',
+      reference: sanitizeScriptureReference(rawRef),
       label: (j['label'] as String?)?.trim(),
     );
   }
@@ -162,8 +177,11 @@ abstract final class DailyFeedRepository {
 
     if (Firebase.apps.isNotEmpty) {
       try {
-        final snap =
-            await FirebaseFirestore.instance.collection('daily').doc(dayKey).get();
+        final snap = await FirebaseFirestore.instance
+            .collection('daily')
+            .doc(dayKey)
+            .get()
+            .timeout(const Duration(seconds: 8));
         if (snap.exists) {
           final data = snap.data();
           if (data != null && data.isNotEmpty) {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app_colors.dart';
+import '../user_messages.dart';
 import '../app_layout.dart';
 import '../app_state.dart';
 import '../auth/auth_screen.dart';
@@ -9,6 +12,7 @@ import 'bible_books.dart';
 import 'bible_prefs.dart';
 import 'bible_repository.dart';
 import 'bible_versions.dart';
+import '../providers/study_library_provider.dart';
 import 'verse_action_sheets.dart';
 import 'verse_annotations_repository.dart';
 
@@ -42,7 +46,10 @@ class ChapterPickerScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Could not load this book.\n${snapshot.error}',
+                  friendlyUserMessage(
+                    snapshot.error,
+                    fallback: UserMessages.loadBook,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -117,7 +124,7 @@ class ChapterPickerScreen extends StatelessWidget {
 }
 
 /// Full chapter view with verse cards, bottom reference bar, version picker.
-class ChapterReaderScreen extends StatefulWidget {
+class ChapterReaderScreen extends ConsumerStatefulWidget {
   const ChapterReaderScreen({
     super.key,
     required this.bookDisplayName,
@@ -128,15 +135,18 @@ class ChapterReaderScreen extends StatefulWidget {
   final int chapter;
 
   @override
-  State<ChapterReaderScreen> createState() => _ChapterReaderScreenState();
+  ConsumerState<ChapterReaderScreen> createState() =>
+      _ChapterReaderScreenState();
 }
 
-class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
+class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   String _translationId = 'kjv';
   bool _recordedProgress = false;
 
   /// Shown immediately after save until Firestore snapshot catches up.
   ChapterAnnotations _optimistic = ChapterAnnotations.empty;
+
+  int? _selectedVerse;
 
   @override
   void initState() {
@@ -220,8 +230,8 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
         SnackBar(
           content: Text(
             translationNeedsApiKey(t)
-                ? 'That Bible isn’t wired into this app build yet. Pick another version.'
-                : '${t.label.split('(').first.trim()} is not available yet.',
+                ? 'This Bible version isn’t available right now. Pick another.'
+                : '${t.label.split('(').first.trim()} isn’t available right now.',
           ),
           behavior: SnackBarBehavior.floating,
         ),
@@ -372,11 +382,52 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          e is StateError
-              ? e.message
-              : 'Could not save. Check you are signed in and online.',
+          friendlyUserMessage(e, fallback: UserMessages.saveFailed),
         ),
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  String _translationLabel() {
+    return translationById(_translationId)?.label.split('(').first.trim() ??
+        _translationId.toUpperCase();
+  }
+
+  /// Matches the chapter bar: book chapter:verse, then translation on the next line.
+  String _verseCopyReference(int verseNum) {
+    return '${widget.bookDisplayName} ${widget.chapter}:$verseNum\n'
+        '${_translationLabel()}';
+  }
+
+  Future<void> _onVerseTapped(
+    int verseNum,
+    String verseText,
+    ChapterAnnotations ann,
+  ) async {
+    setState(() => _selectedVerse = verseNum);
+    if (!context.mounted) return;
+    final action = await showVerseActionsSheet(
+      context,
+      verseNumber: verseNum,
+      subtitle:
+          '${widget.bookDisplayName} ${widget.chapter}:$verseNum · ${_translationLabel()}',
+    );
+    if (!mounted) return;
+    setState(() => _selectedVerse = null);
+    if (action == null) return;
+    await _verseAction(action, verseNum, ann, verseText);
+  }
+
+  Future<void> _copyVerse(int verseNum, String verseText) async {
+    final payload = '${verseText.trim()}\n\n${_verseCopyReference(verseNum)}';
+    await Clipboard.setData(ClipboardData(text: payload));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Verse copied'),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -385,7 +436,13 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
     String action,
     int verseNum,
     ChapterAnnotations ann,
+    String verseText,
   ) async {
+    if (action == 'Copy') {
+      await _copyVerse(verseNum, verseText);
+      return;
+    }
+
     if (!await ensureSignedIn(context)) return;
     if (!mounted) return;
 
@@ -561,7 +618,18 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
         future: _readerFuture(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  friendlyUserMessage(
+                    snapshot.error,
+                    fallback: UserMessages.loadPassage,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
           }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -590,17 +658,19 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
               widget.chapter < totalChapters ||
               (inCanon && bookIndex < kOrderedBibleBooks.length - 1);
 
-          return StreamBuilder<ChapterAnnotations>(
-            stream: VerseAnnotationsRepository.instance.watchChapter(
-              book: widget.bookDisplayName,
-              chapter: widget.chapter,
-              translationId: _translationId,
-            ),
-            builder: (context, annSnap) {
-              final server = annSnap.data ?? ChapterAnnotations.empty;
-              _pruneOptimistic(server);
-              final ann = _mergeAnnotations(server);
-              return Column(
+          final libraryAsync = ref.watch(studyLibraryProvider);
+          final server = libraryAsync.valueOrNull?.annotationsForChapter(
+                book: widget.bookDisplayName,
+                chapter: widget.chapter,
+                translationId: _translationId,
+              ) ??
+              ChapterAnnotations.empty;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _pruneOptimistic(server);
+          });
+          final ann = _mergeAnnotations(server);
+          return Column(
                 children: [
                   Expanded(
                     child: ListView.builder(
@@ -623,111 +693,130 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
                             : Colors.white;
                         final hasNotes = ann.hasNotes(vn);
                         final bookmarked = ann.isBookmarked(vn);
+                        final selected = _selectedVerse == vn;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: Material(
-                            color: cardColor,
-                            elevation: 3,
-                            shadowColor: const Color(0x33000000),
-                            borderRadius: BorderRadius.circular(18),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                14,
-                                14,
-                                10,
-                                14,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              border: selected
+                                  ? Border.all(
+                                      color: AppColors.accentBlue,
+                                      width: 2.5,
+                                    )
+                                  : null,
+                            ),
+                            child: Material(
+                              color: cardColor,
+                              elevation: selected ? 5 : 3,
+                              shadowColor: const Color(0x33000000),
+                              borderRadius: BorderRadius.circular(18),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(18),
+                                onTap: () => _onVerseTapped(vn, text, ann),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    14,
+                                    10,
+                                    14,
+                                  ),
+                                  child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.verseBadge,
-                                          borderRadius:
-                                              BorderRadius.circular(999),
-                                        ),
-                                        child: Text(
-                                          '$vn',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w800,
-                                            color: AppColors.ink,
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.verseBadge,
+                                              borderRadius:
+                                                  BorderRadius.circular(999),
+                                            ),
+                                            child: Text(
+                                              '$vn',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                                color: AppColors.ink,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      if (hasNotes) ...[
-                                        const SizedBox(width: 6),
-                                        IconButton(
-                                          visualDensity: VisualDensity.compact,
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(
-                                            minWidth: 32,
-                                            minHeight: 32,
-                                          ),
-                                          tooltip: 'View notes',
-                                          icon: Icon(
-                                            Icons.menu_book_rounded,
-                                            size: 22,
-                                            color: AppColors.accentBlueDeep,
-                                          ),
-                                          onPressed: () =>
-                                              _openVerseNotes(vn, ann),
-                                        ),
-                                      ],
-                                      if (bookmarked) ...[
-                                        Icon(
-                                          Icons.bookmark,
-                                          size: 20,
-                                          color: AppColors.goldDeep,
-                                        ),
-                                        const SizedBox(width: 4),
-                                      ],
-                                      const Spacer(),
-                                      PopupMenuButton<String>(
-                                        icon: Icon(
-                                          Icons.more_horiz,
-                                          color: AppColors.inkSoft,
-                                        ),
-                                        onSelected: (v) =>
-                                            _verseAction(v, vn, ann),
-                                        itemBuilder: (_) => const [
-                                          PopupMenuItem(
-                                            value: 'Highlight',
-                                            child: Text('Highlight'),
-                                          ),
-                                          PopupMenuItem(
-                                            value: 'Note',
-                                            child: Text('Note'),
-                                          ),
-                                          PopupMenuItem(
-                                            value: 'Bookmark',
-                                            child: Text('Bookmark'),
-                                          ),
-                                          PopupMenuItem(
-                                            value: 'Share',
-                                            child: Text('Share'),
+                                          if (hasNotes) ...[
+                                            const SizedBox(width: 6),
+                                            IconButton(
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(
+                                                minWidth: 32,
+                                                minHeight: 32,
+                                              ),
+                                              tooltip: 'View notes',
+                                              icon: Icon(
+                                                Icons.menu_book_rounded,
+                                                size: 22,
+                                                color: AppColors.accentBlueDeep,
+                                              ),
+                                              onPressed: () =>
+                                                  _openVerseNotes(vn, ann),
+                                            ),
+                                          ],
+                                          if (bookmarked) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              Icons.bookmark,
+                                              size: 20,
+                                              color: AppColors.goldDeep,
+                                            ),
+                                          ],
+                                          const Spacer(),
+                                          PopupMenuButton<String>(
+                                            icon: Icon(
+                                              Icons.more_horiz,
+                                              color: AppColors.inkSoft,
+                                            ),
+                                            onSelected: (v) =>
+                                                _verseAction(v, vn, ann, text),
+                                            itemBuilder: (_) => const [
+                                              PopupMenuItem(
+                                                value: 'Highlight',
+                                                child: Text('Highlight'),
+                                              ),
+                                              PopupMenuItem(
+                                                value: 'Note',
+                                                child: Text('Note'),
+                                              ),
+                                              PopupMenuItem(
+                                                value: 'Bookmark',
+                                                child: Text('Bookmark'),
+                                              ),
+                                              PopupMenuItem(
+                                                value: 'Copy',
+                                                child: Text('Copy'),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        text,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          height: 1.65,
+                                          color: AppColors.ink,
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    text,
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      height: 1.65,
-                                      color: AppColors.ink,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -878,8 +967,6 @@ class _ChapterReaderScreenState extends State<ChapterReaderScreen> {
                   ),
                 ],
               );
-            },
-          );
         },
       ),
     );

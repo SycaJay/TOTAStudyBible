@@ -2,8 +2,17 @@ name: Build and Deploy APK
 
 on:
   workflow_dispatch:
+    inputs:
+      upload_version_json:
+        description: Upload version.json to Hostinger (off by default)
+        type: boolean
+        default: false
   push:
     branches: [main]
+
+env:
+  APK_PUBLIC_URL: https://studybible.totaonline.com/app.apk
+  VERSION_JSON_PUBLIC_URL: https://studybible.totaonline.com/version.json
 
 jobs:
   build:
@@ -27,6 +36,20 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Read app version from pubspec
+        id: app_version
+        run: |
+          set -euo pipefail
+          RAW=$(grep -E '^version:' pubspec.yaml | head -1 | sed 's/^version:[[:space:]]*//')
+          VERSION="${RAW%%+*}"
+          VERSION="${VERSION// /}"
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not read version from pubspec.yaml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "App version (pubspec): $VERSION"
 
       - name: Restore Firebase and local config from secrets
         env:
@@ -61,19 +84,49 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
+      - name: Prepare Hostinger deploy files
+        run: |
+          set -euo pipefail
+          mkdir -p deploy-apk deploy-version
+          cp build/app/outputs/flutter-apk/app-release.apk deploy-apk/app.apk
+          printf '%s\n' "{" > deploy-version/version.json
+          printf '  "version": "%s",\n' "${{ steps.app_version.outputs.version }}" >> deploy-version/version.json
+          printf '  "apk_url": "%s"\n' "$APK_PUBLIC_URL" >> deploy-version/version.json
+          printf '%s\n' "}" >> deploy-version/version.json
+          echo "Deploy APK: deploy-apk/app.apk"
+          echo "Generated version.json (upload when enabled):"
+          cat deploy-version/version.json
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: |
+            deploy-apk/app.apk
+            deploy-version/version.json
           if-no-files-found: error
 
       - name: Upload APK to Hostinger
+        if: ${{ secrets.FTP_HOST != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: build/app/outputs/flutter-apk/
+          local-dir: deploy-apk/
+          server-dir: public_html/
+          dangerous-clean-slate: false
+
+      - name: Upload version.json to Hostinger
+        if: >-
+          ${{ secrets.FTP_HOST != '' &&
+              ((github.event_name == 'workflow_dispatch' && inputs.upload_version_json) ||
+               vars.UPLOAD_VERSION_JSON == 'true') }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: deploy-version/
           server-dir: public_html/
           dangerous-clean-slate: false

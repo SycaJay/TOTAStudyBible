@@ -138,12 +138,12 @@ class BibleRepository {
     }
 
     if (meta.kind == BibleEditionKind.bundledLocal) {
-      throw Exception('Missing bundled Bible for $tid (${meta.label}).');
+      throw Exception('This Bible version isn’t available right now.');
     }
 
     if (!BibleApiConfig.isConfigured) {
       throw Exception(
-        'Missing bundled text for ${meta.label} and no API key was baked into this build.',
+        'This Bible version isn’t available right now.',
       );
     }
 
@@ -188,12 +188,12 @@ class BibleRepository {
     }
 
     if (meta.kind == BibleEditionKind.bundledLocal) {
-      throw Exception('Missing bundled Bible for $tid.');
+      throw Exception('This Bible version isn’t available right now.');
     }
 
     if (!BibleApiConfig.isConfigured) {
       throw Exception(
-        'Missing bundled text for ${meta.label} and no API key was baked into this build.',
+        'This Bible version isn’t available right now.',
       );
     }
 

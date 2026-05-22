@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,7 +37,25 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+  GoogleSignIn? _googleSignIn;
+
+  static const _webGoogleClientId =
+      '336853606359-0mmo5imoh55skm5jdbcg9lq2cuubutpk.apps.googleusercontent.com';
+
+  GoogleSignIn get _google {
+    if (_googleSignIn != null) return _googleSignIn!;
+    const fromEnv = String.fromEnvironment(
+      'GOOGLE_WEB_CLIENT_ID',
+      defaultValue: '',
+    );
+    final webId =
+        fromEnv.isNotEmpty ? fromEnv : _webGoogleClientId;
+    _googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+      clientId: kIsWeb ? webId : null,
+    );
+    return _googleSignIn!;
+  }
 
   bool _signedIn = false;
   String? _email;
@@ -227,7 +246,9 @@ class AppState extends ChangeNotifier {
 
     DocumentSnapshot<Map<String, dynamic>> snap;
     try {
-      snap = await ref.get();
+      snap = await ref
+          .get()
+          .timeout(const Duration(seconds: 8));
     } catch (_) {
       _applyReadingFromPrefs(p);
       return;
@@ -244,7 +265,9 @@ class AppState extends ChangeNotifier {
     }
 
     try {
-      snap = await ref.get();
+      snap = await ref
+          .get()
+          .timeout(const Duration(seconds: 8));
     } catch (_) {
       _applyReadingFromPrefs(p);
       return;
@@ -260,10 +283,23 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> signInWithGoogle() async {
-    final account = await _googleSignIn.signIn();
-    if (account == null) return;
+  /// Shared [GoogleSignIn] instance (web uses [GoogleSignInControl] + GIS button).
+  GoogleSignIn get googleSignIn => _google;
 
+  /// Mobile / desktop: popup or native account picker.
+  Future<void> signInWithGoogle() async {
+    if (kIsWeb) {
+      throw UnsupportedError(
+        'On web use GoogleSignInControl (renderButton), not signIn().',
+      );
+    }
+    final account = await _google.signIn();
+    if (account == null) return;
+    await signInWithGoogleAccount(account);
+  }
+
+  /// Web GIS button (and mobile after [signIn]) → Firebase Auth.
+  Future<void> signInWithGoogleAccount(GoogleSignInAccount account) async {
     final auth = await account.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: auth.accessToken,
@@ -293,7 +329,7 @@ class AppState extends ChangeNotifier {
       await p.setInt('reading_chapter', _lastChapter!);
       await p.setDouble('reading_progress', _lastProgress);
     }
-    await _googleSignIn.signOut();
+    await _google.signOut();
     await FirebaseAuth.instance.signOut();
     await load();
   }
@@ -347,6 +383,45 @@ class AppState extends ChangeNotifier {
     _prayerRequests.add(
       PrayerRequestEntry(title: title.trim(), detail: detail.trim()),
     );
+    await _persistPrayers();
+    notifyListeners();
+  }
+
+  Future<void> updateJournalTopicAt(int index, String topic) async {
+    if (!_signedIn) return;
+    final t = topic.trim();
+    if (t.isEmpty || index < 0 || index >= _journalTopics.length) return;
+    _journalTopics[index] = t;
+    await _persistJournal();
+    notifyListeners();
+  }
+
+  Future<void> removeJournalTopicAt(int index) async {
+    if (!_signedIn || index < 0 || index >= _journalTopics.length) return;
+    _journalTopics.removeAt(index);
+    await _persistJournal();
+    notifyListeners();
+  }
+
+  Future<void> updatePrayerRequestAt(
+    int index,
+    String title,
+    String detail,
+  ) async {
+    if (!_signedIn || index < 0 || index >= _prayerRequests.length) return;
+    final t = title.trim();
+    if (t.isEmpty) return;
+    _prayerRequests[index] = PrayerRequestEntry(
+      title: t,
+      detail: detail.trim(),
+    );
+    await _persistPrayers();
+    notifyListeners();
+  }
+
+  Future<void> removePrayerRequestAt(int index) async {
+    if (!_signedIn || index < 0 || index >= _prayerRequests.length) return;
+    _prayerRequests.removeAt(index);
     await _persistPrayers();
     notifyListeners();
   }
