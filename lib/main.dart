@@ -24,6 +24,7 @@ import 'bible/verse_action_sheets.dart';
 import 'firebase_bootstrap.dart';
 import 'firebase_options.dart';
 import 'onboarding_flow.dart';
+import 'app_update/app_update_checker.dart';
 import 'profile/profile_library_sections.dart';
 import 'widgets/google_sign_in_control.dart';
 
@@ -58,6 +59,8 @@ class BibleApp extends StatelessWidget {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'TOTA Study Bible',
+            builder: (context, child) =>
+                AppUpdateChecker(child: child ?? const SizedBox.shrink()),
             initialRoute: '/',
             routes: {
               '/': (context) => const WelcomeScreen(),
