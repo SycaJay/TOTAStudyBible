@@ -27,7 +27,7 @@ import 'firebase_options.dart';
 import 'onboarding_flow.dart';
 import 'app_update/app_update_checker.dart';
 import 'profile/profile_library_sections.dart';
-import 'widgets/google_sign_in_control.dart';
+import 'widgets/platform_google_sign_in.dart';
 
 Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
@@ -1469,7 +1469,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const SizedBox(height: 16),
                               ],
-                              GoogleSignInControl(
+                              PlatformGoogleSignIn(
                                 googleSignIn: app.googleSignIn,
                                 busy: _profileGoogleBusy,
                                 height: 48,

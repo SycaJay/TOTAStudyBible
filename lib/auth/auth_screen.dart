@@ -3,7 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../app_colors.dart';
 import '../app_state.dart';
-import '../widgets/google_sign_in_control.dart';
+import '../widgets/platform_google_sign_in.dart';
 import 'auth_errors.dart';
 
 /// Google sign-in only (Firebase Auth).
@@ -18,25 +18,7 @@ class _AuthScreenState extends State<AuthScreen> {
   String? _error;
   bool _busy = false;
 
-  Future<void> _completeGoogleAccount(GoogleSignInAccount account) async {
-    setState(() {
-      _error = null;
-      _busy = true;
-    });
-    try {
-      await AppStateScope.of(context).signInWithGoogleAccount(account);
-      if (!mounted) return;
-      if (AppStateScope.of(context).signedIn) {
-        Navigator.of(context).pop(true);
-      }
-    } catch (e) {
-      if (mounted) setState(() => _error = friendlySignInErrorMessage(e));
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _onMobileGoogle() async {
+  Future<void> _onGoogle() async {
     setState(() {
       _error = null;
       _busy = true;
@@ -57,8 +39,27 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _onGoogleAccount(GoogleSignInAccount account) async {
+    setState(() {
+      _error = null;
+      _busy = true;
+    });
+    try {
+      await AppStateScope.of(context).signInWithGoogleAccount(account);
+      if (!mounted) return;
+      if (AppStateScope.of(context).signedIn) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlySignInErrorMessage(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final app = AppStateScope.of(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -116,13 +117,13 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ],
                         const SizedBox(height: 28),
-                        GoogleSignInControl(
-                          googleSignIn: AppStateScope.of(context).googleSignIn,
+                        PlatformGoogleSignIn(
+                          googleSignIn: app.googleSignIn,
                           busy: _busy,
                           height: 48,
-                          enabled: !AppStateScope.of(context).signedIn,
-                          onGoogleAccount: _completeGoogleAccount,
-                          onMobileSignIn: _onMobileGoogle,
+                          enabled: !app.signedIn,
+                          onMobileSignIn: _onGoogle,
+                          onGoogleAccount: _onGoogleAccount,
                         ),
                       ],
                     ),

@@ -295,31 +295,49 @@ class AppState extends ChangeNotifier {
     }
     final account = await _google.signIn();
     if (account == null) return;
-    await signInWithGoogleAccount(account);
+    await _completeFirebaseSignIn(account);
   }
 
-  /// Web GIS button (and mobile after [signIn]) → Firebase Auth.
+  /// Web GIS button → Firebase Auth. Mobile uses [signInWithGoogle].
   Future<void> signInWithGoogleAccount(GoogleSignInAccount account) async {
+    await _completeFirebaseSignIn(account);
+  }
+
+  Future<void> _completeFirebaseSignIn(GoogleSignInAccount account) async {
     final auth = await account.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: auth.accessToken,
       idToken: auth.idToken,
     );
-    final cred =
-        await FirebaseAuth.instance.signInWithCredential(credential);
-    final user = cred.user;
+    await FirebaseAuth.instance.signInWithCredential(credential);
+    final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
-        {
-          'email': user.email,
-          'displayName': user.displayName,
-          'photoUrl': user.photoURL,
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
+      await _syncUserProfileDoc(user);
     }
     await load();
+  }
+
+  /// Best-effort Firestore profile; must not block Firebase Auth sign-in.
+  Future<void> _syncUserProfileDoc(User user) async {
+    try {
+      final data = <String, dynamic>{
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      final email = user.email;
+      if (email != null && email.isNotEmpty) data['email'] = email;
+      final name = user.displayName;
+      if (name != null && name.isNotEmpty) data['displayName'] = name;
+      final photo = user.photoURL;
+      if (photo != null && photo.isNotEmpty) data['photoUrl'] = photo;
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set(data, SetOptions(merge: true));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('User profile sync skipped (signed in): $e');
+      }
+    }
   }
 
   Future<void> signOut() async {
