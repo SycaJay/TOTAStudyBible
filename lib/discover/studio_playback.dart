@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../user_messages.dart';
+import 'studio_media_player.dart';
 
 /// Global sermon player (survives tab changes).
 class StudioPlayback extends ChangeNotifier {
@@ -14,6 +15,11 @@ class StudioPlayback extends ChangeNotifier {
   bool get isActive => url != null && url!.isNotEmpty;
 
   Future<void> start(String mediaUrl, String mediaTitle) async {
+    if (studioMediaIsVideo(mediaUrl)) {
+      error = 'Only audio sermons can be played in the app.';
+      notifyListeners();
+      return;
+    }
     if (mediaUrl == url && controller != null) {
       await togglePlayPause();
       return;

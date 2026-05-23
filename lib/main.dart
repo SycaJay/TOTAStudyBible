@@ -6,14 +6,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import 'app_colors.dart';
 import 'app_layout.dart';
 import 'app_state.dart';
 import 'auth/auth_errors.dart';
 import 'auth/auth_screen.dart';
 import 'discover/studio_catalog_repository.dart';
+import 'discover/studio_media_player.dart' show studioMediaIsAudio;
+import 'discover/studio_playback.dart';
+import 'discover/studio_player_widgets.dart';
 import 'premium_bottom_nav.dart';
 import 'bible/bible_api_config.dart';
 import 'bible/bible_prefs.dart';
@@ -90,7 +91,7 @@ class BibleApp extends StatelessWidget {
                 AppUpdateChecker(child: child ?? const SizedBox.shrink()),
             initialRoute: '/',
             routes: {
-              '/': (context) => const WelcomeScreen(),
+              '/': (context) => const AppStartGate(),
               '/main': (context) {
                 final args = ModalRoute.of(context)?.settings.arguments;
                 var tab = 0;
@@ -183,6 +184,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late int _currentIndex;
+  late final StudioPlayback _studioPlayback;
 
   final List<Widget> _pages = [
     const HomeScreen(),
@@ -196,21 +198,41 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialTabIndex.clamp(0, 4);
+    _studioPlayback = StudioPlayback();
+  }
+
+  @override
+  void dispose() {
+    _studioPlayback.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: AppGradients.scaffold),
-        child: IndexedStack(index: _currentIndex, children: _pages),
-      ),
-      bottomNavigationBar: PremiumBottomNav(
-        currentIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() => _currentIndex = index);
-        },
+    return StudioPlaybackScope(
+      playback: _studioPlayback,
+      child: Scaffold(
+        extendBody: true,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(gradient: AppGradients.scaffold),
+          child: IndexedStack(index: _currentIndex, children: _pages),
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            StudioMiniPlayerBar(
+              playback: _studioPlayback,
+              visible: _currentIndex != 2,
+              onOpenDiscover: () => setState(() => _currentIndex = 2),
+            ),
+            PremiumBottomNav(
+              currentIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() => _currentIndex = index);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -726,31 +748,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     await _catalogFuture;
   }
 
-  bool _studioItemIsVideo(String url) {
-    final u = url.toLowerCase();
-    return u.endsWith('.mp4') ||
-        u.endsWith('.webm') ||
-        u.endsWith('.m4v') ||
-        u.contains('.mp4?');
-  }
-
-  Future<void> _playStudioItem(BuildContext context, String raw) async {
-    final uri = Uri.tryParse(raw.trim());
-    if (uri == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid link.')),
-      );
-      return;
-    }
-    if (!await canLaunchUrl(uri)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cannot open this link on this device.')),
-        );
-      }
-      return;
-    }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  void _playStudioItem(BuildContext context, StudioMediaItem item) {
+    if (!studioMediaIsAudio(item.url)) return;
+    StudioPlaybackScope.of(context).start(item.url, item.title);
   }
 
   @override
@@ -811,8 +811,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             final data = snapshot.data!;
             final catalog = data.catalog;
             final err = data.error;
+            final audioItems = catalog.items
+                .where((item) => studioMediaIsAudio(item.url))
+                .toList();
 
-            if (catalog.items.isEmpty) {
+            if (audioItems.isEmpty) {
               return _GlassCard(
                 child: Text(
                   err ??
@@ -822,6 +825,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 ),
               );
             }
+
+            final playback = StudioPlaybackScope.of(context);
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -839,18 +844,24 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ),
                   const SizedBox(height: 10),
                 ],
-                Text(
-                  'Loaded live from gloriousvisionstvplus.com',
-                  style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
+                ListenableBuilder(
+                  listenable: playback,
+                  builder: (context, _) {
+                    if (!playback.isActive) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: StudioInlinePlayer(
+                        playback: playback,
+                        onClose: playback.close,
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 12),
-                for (final item in catalog.items) ...[
+                for (final item in audioItems) ...[
                   _StudioMediaCard(
                     title: item.title,
-                    icon: _studioItemIsVideo(item.url)
-                        ? Icons.play_circle_outline_rounded
-                        : Icons.headphones_rounded,
-                    onTap: () => _playStudioItem(context, item.url),
+                    playing: playback.url == item.url,
+                    onTap: () => _playStudioItem(context, item),
                   ),
                   const SizedBox(height: 10),
                 ],
@@ -866,13 +877,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 class _StudioMediaCard extends StatelessWidget {
   const _StudioMediaCard({
     required this.title,
-    required this.icon,
     required this.onTap,
+    this.playing = false,
   });
 
   final String title;
-  final IconData icon;
   final VoidCallback onTap;
+  final bool playing;
 
   @override
   Widget build(BuildContext context) {
@@ -886,19 +897,30 @@ class _StudioMediaCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              Icon(icon, color: AppColors.accentBlue, size: 28),
+              Icon(
+                Icons.headphones_rounded,
+                color: playing ? AppColors.accentBlueDeep : AppColors.accentBlue,
+                size: 28,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     height: 1.25,
+                    color: playing ? AppColors.accentBlueDeep : null,
                   ),
                 ),
               ),
-              Icon(Icons.open_in_new_rounded, size: 20, color: AppColors.inkSoft),
+              Icon(
+                playing
+                    ? Icons.pause_circle_filled_rounded
+                    : Icons.play_circle_filled_rounded,
+                size: 28,
+                color: AppColors.accentBlue,
+              ),
             ],
           ),
         ),

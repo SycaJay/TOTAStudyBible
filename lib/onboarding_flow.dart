@@ -2,9 +2,63 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_colors.dart';
 import 'app_layout.dart';
+
+const _onboardingCompleteKey = 'onboarding_complete';
+
+/// Whether the user has finished the first-launch welcome screen.
+class OnboardingPrefs {
+  OnboardingPrefs._();
+
+  static Future<bool> hasCompleted() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_onboardingCompleteKey) ?? false;
+  }
+
+  static Future<void> markCompleted() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_onboardingCompleteKey, true);
+  }
+}
+
+/// Chooses welcome (first launch) or home on every app open.
+class AppStartGate extends StatefulWidget {
+  const AppStartGate({super.key});
+
+  @override
+  State<AppStartGate> createState() => _AppStartGateState();
+}
+
+class _AppStartGateState extends State<AppStartGate> {
+  @override
+  void initState() {
+    super.initState();
+    _goNext();
+  }
+
+  Future<void> _goNext() async {
+    final done = await OnboardingPrefs.hasCompleted();
+    if (!mounted) return;
+    if (done) {
+      Navigator.of(context).pushReplacementNamed('/main');
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const WelcomeScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.scaffoldTop,
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
 
 /// Old Testament books (Protestant canon).
 const List<String> kOldTestamentBooks = [
@@ -164,8 +218,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.dispose();
   }
 
-  void _onGetStarted() {
-    Navigator.of(context).pushReplacementNamed('/main', arguments: 1);
+  Future<void> _onGetStarted() async {
+    await OnboardingPrefs.markCompleted();
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/main');
   }
 
   @override

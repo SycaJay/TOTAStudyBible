@@ -46,10 +46,9 @@ class StudioPlayerControls extends StatelessWidget {
         final position = c.value.position;
         final duration = c.value.duration;
         final maxMs = duration.inMilliseconds;
-        final sliderMax = maxMs > 0 ? maxMs.toDouble() : 1.0;
-        final sliderValue = maxMs > 0
-            ? position.inMilliseconds.clamp(0, maxMs).toDouble()
-            : 0.0;
+        final progress = maxMs > 0
+            ? (position.inMilliseconds / maxMs).clamp(0.0, 1.0)
+            : null;
         final playing = c.value.isPlaying;
 
         return Row(
@@ -68,27 +67,21 @@ class StudioPlayerControls extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  trackHeight: dense ? 2.5 : 3,
-                  thumbShape: RoundSliderThumbShape(
-                    enabledThumbRadius: dense ? 5 : 6,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: dense ? 4 : 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: dense ? 3 : 4,
+                    backgroundColor: AppColors.progressTrack,
+                    color: AppColors.accentBlue,
                   ),
-                  overlayShape: SliderComponentShape.noOverlay,
-                ),
-                child: Slider(
-                  value: sliderValue,
-                  max: sliderMax,
-                  onChanged: maxMs > 0
-                      ? (v) => playback.seekTo(
-                          Duration(milliseconds: v.round()),
-                        )
-                      : null,
                 ),
               ),
             ),
             SizedBox(
-              width: dense ? 52 : 56,
+              width: dense ? 48 : 52,
               child: Text(
                 formatStudioElapsed(position),
                 textAlign: TextAlign.end,
@@ -206,54 +199,67 @@ class StudioMiniPlayerBar extends StatelessWidget {
     super.key,
     required this.playback,
     required this.onOpenDiscover,
+    this.visible = true,
   });
 
   final StudioPlayback playback;
   final VoidCallback onOpenDiscover;
+
+  /// When false, mini player is hidden (e.g. on Discover where the inline player shows).
+  final bool visible;
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: playback,
       builder: (context, _) {
-        if (!playback.isActive) return const SizedBox.shrink();
+        if (!playback.isActive || !visible) {
+          return const SizedBox.shrink();
+        }
 
         return Material(
           color: Colors.white,
           elevation: 8,
-          child: InkWell(
-            onTap: onOpenDiscover,
+          child: SafeArea(
+            top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.headphones_rounded,
-                        color: AppColors.accentBlue,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          playback.title ?? 'Sermon',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                  InkWell(
+                    onTap: onOpenDiscover,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.headphones_rounded,
+                            color: AppColors.accentBlue,
+                            size: 22,
                           ),
-                        ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              playback.title ?? 'Sermon',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Close',
+                            visualDensity: VisualDensity.compact,
+                            onPressed: playback.close,
+                            icon: const Icon(Icons.close_rounded, size: 20),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        tooltip: 'Close',
-                        visualDensity: VisualDensity.compact,
-                        onPressed: playback.close,
-                        icon: const Icon(Icons.close_rounded, size: 20),
-                      ),
-                    ],
+                    ),
                   ),
                   StudioPlayerControls(playback: playback, dense: true),
                 ],

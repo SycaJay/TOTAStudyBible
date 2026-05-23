@@ -5,14 +5,22 @@ import '../app_colors.dart';
 import '../user_messages.dart';
 
 bool studioMediaIsVideo(String url) {
-  final u = url.toLowerCase();
-  return u.endsWith('.mp4') ||
-      u.endsWith('.webm') ||
-      u.endsWith('.m4v') ||
-      u.contains('.mp4?');
+  final path = url.toLowerCase().split('?').first;
+  return path.endsWith('.mp4') ||
+      path.endsWith('.webm') ||
+      path.endsWith('.m4v') ||
+      path.endsWith('.mov');
 }
 
-bool studioMediaIsAudio(String url) => !studioMediaIsVideo(url);
+bool studioMediaIsAudio(String url) {
+  if (studioMediaIsVideo(url)) return false;
+  final path = url.toLowerCase().split('?').first;
+  return path.endsWith('.mp3') ||
+      path.endsWith('.m4a') ||
+      path.endsWith('.ogg') ||
+      path.endsWith('.wav') ||
+      path.endsWith('.aac');
+}
 
 class StudioInlinePlayer extends StatefulWidget {
   const StudioInlinePlayer({
