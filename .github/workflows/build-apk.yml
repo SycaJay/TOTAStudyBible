@@ -157,5 +157,12 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ftp-upload-apk/
           server-dir: ./
+          state-name: .ftp-deploy-sync-state-apk.json
           dangerous-clean-slate: false
           log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            windows/**
+            macos/**

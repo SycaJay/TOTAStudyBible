@@ -137,5 +137,13 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ftp-upload/
           server-dir: ./
+          state-name: .ftp-deploy-sync-state-macos.json
           dangerous-clean-slate: false
           log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            app.apk
+            version.json
+            windows/**
