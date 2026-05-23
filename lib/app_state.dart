@@ -50,9 +50,12 @@ class AppState extends ChangeNotifier {
     );
     final webId =
         fromEnv.isNotEmpty ? fromEnv : _webGoogleClientId;
+    // Android/iOS need [serverClientId] (Web OAuth client) so Google returns an
+    // id token for Firebase Auth. Web uses [clientId] only.
     _googleSignIn = GoogleSignIn(
       scopes: ['email', 'profile'],
       clientId: kIsWeb ? webId : null,
+      serverClientId: kIsWeb ? null : webId,
     );
     return _googleSignIn!;
   }
@@ -305,6 +308,14 @@ class AppState extends ChangeNotifier {
 
   Future<void> _completeFirebaseSignIn(GoogleSignInAccount account) async {
     final auth = await account.authentication;
+    if (auth.idToken == null || auth.idToken!.isEmpty) {
+      throw FirebaseAuthException(
+        code: 'missing-google-id-token',
+        message:
+            'Google sign-in did not return a token for Firebase. '
+            'Check Firebase Android app SHA-1 and OAuth Web client ID.',
+      );
+    }
     final credential = GoogleAuthProvider.credential(
       accessToken: auth.accessToken,
       idToken: auth.idToken,

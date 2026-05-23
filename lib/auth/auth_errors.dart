@@ -41,6 +41,9 @@ String _firebaseAuthMessage(FirebaseAuthException e) {
       return 'Too many attempts. Wait a few minutes, then try again.';
     case 'user-disabled':
       return 'This account has been disabled. Contact support if you need help.';
+    case 'missing-google-id-token':
+      return 'Google sign-in could not connect to Firebase. '
+          'The app build may need an update, or Firebase Android SHA-1 may be missing.';
     case 'invalid-credential':
     case 'wrong-password':
     case 'user-not-found':
