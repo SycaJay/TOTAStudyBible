@@ -77,8 +77,8 @@ jobs:
             exit 1
           fi
 
-      # Unsigned IPA: AltStore signs on the device with the user's free Apple ID.
-      - name: Build unsigned IPA for AltStore
+      # Archive without codesign, then zip Runner.app → .ipa (Flutter skips IPA when --no-codesign).
+      - name: Build iOS archive (no codesign)
         env:
           API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
         run: |
@@ -88,15 +88,12 @@ jobs:
             ARGS+=(--dart-define=API_BIBLE_KEY="$API_BIBLE_KEY")
           fi
           flutter "${ARGS[@]}"
-          mkdir -p dist/ios
-          IPA_SRC="$(find build/ios -name '*.ipa' -print -quit)"
-          if [ -z "$IPA_SRC" ]; then
-            echo "::error::No .ipa produced under build/ios"
-            find build/ios -type f 2>/dev/null || true
-            exit 1
-          fi
-          cp "$IPA_SRC" "dist/ios/${IPA_FILENAME}"
-          ls -lh "dist/ios/${IPA_FILENAME}"
+
+      - name: Package unsigned IPA for AltStore
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/ios-package-unsigned-ipa.sh
+          .github/scripts/ios-package-unsigned-ipa.sh "dist/ios/${IPA_FILENAME}"
 
       - name: Upload IPA workflow artifact
         uses: actions/upload-artifact@v4
