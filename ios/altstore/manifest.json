@@ -5,5 +5,10 @@
   "appsURL": "https://raw.githubusercontent.com/SycaJay/TOTAStudyBible/main/ios/altstore/apps.json",
   "bundleIdentifier": "com.example.njbibleapp",
   "ipaArtifactName": "TOTAStudyBible.ipa",
-  "lastUpdated": null
+  "lastUpdated": "2026-05-24T18:41:34Z",
+  "version": "1.0.1",
+  "buildVersion": "2",
+  "size": 37036047,
+  "downloadURL": "https://github.com/SycaJay/TOTAStudyBible/releases/download/ios-v1.0.1-2/TOTAStudyBible.ipa",
+  "sha256": "54a586fff536d14654bc19681a843855467264862753fb099314a317c5c26576"
 }

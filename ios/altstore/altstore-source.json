@@ -20,9 +20,10 @@
       "category": "books",
       "version": "1.0.1",
       "buildVersion": "2",
-      "size": 0,
-      "downloadURL": "https://github.com/SycaJay/TOTAStudyBible/releases/latest/download/TOTAStudyBible.ipa",
-      "permissions": []
+      "size": 37036047,
+      "downloadURL": "https://github.com/SycaJay/TOTAStudyBible/releases/download/ios-v1.0.1-2/TOTAStudyBible.ipa",
+      "permissions": [],
+      "versionDate": "2026-05-24T18:41:34Z"
     }
   ],
   "news": []
