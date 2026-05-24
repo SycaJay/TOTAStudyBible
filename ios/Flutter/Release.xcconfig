@@ -1,1 +1,3 @@
 #include "Generated.xcconfig"
+// Optional CI overrides (created by GitHub Actions; safe to omit locally).
+#include? "CI-Signing.xcconfig"

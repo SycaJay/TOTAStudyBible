@@ -1,0 +1,9 @@
+{
+  "generatedBy": "GitHub Actions — build-ios.yml",
+  "purpose": "Companion metadata for AltStore; primary source file is altstore-source.json",
+  "sourceURL": "https://raw.githubusercontent.com/SycaJay/TOTAStudyBible/main/ios/altstore/altstore-source.json",
+  "appsURL": "https://raw.githubusercontent.com/SycaJay/TOTAStudyBible/main/ios/altstore/apps.json",
+  "bundleIdentifier": "com.example.njbibleapp",
+  "ipaArtifactName": "TOTAStudyBible.ipa",
+  "lastUpdated": null
+}

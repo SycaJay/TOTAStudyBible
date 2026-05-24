@@ -1,0 +1,3 @@
+# Generated on CI — never commit real signing material.
+ExportOptions.plist
+*.mobileprovision

@@ -1,0 +1,29 @@
+{
+  "name": "TOTA Study Bible",
+  "subtitle": "Official iOS builds",
+  "description": "Signed IPA builds for sideloading with AltStore. Updated automatically by GitHub Actions on each release.",
+  "website": "https://studybible.totaonline.com",
+  "iconURL": "https://raw.githubusercontent.com/SycaJay/TOTAStudyBible/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
+  "tintColor": "4E94D8",
+  "featuredApps": [
+    "com.example.njbibleapp"
+  ],
+  "apps": [
+    {
+      "name": "TOTA Study Bible",
+      "bundleIdentifier": "com.example.njbibleapp",
+      "developerName": "TOTA Online",
+      "subtitle": "Study Bible",
+      "localizedDescription": "Read Scripture, listen to sermons, and sync notes with your Google account.",
+      "iconURL": "https://raw.githubusercontent.com/SycaJay/TOTAStudyBible/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
+      "tintColor": "4E94D8",
+      "category": "books",
+      "version": "1.0.1",
+      "buildVersion": "2",
+      "size": 0,
+      "downloadURL": "https://github.com/SycaJay/TOTAStudyBible/releases/latest/download/TOTAStudyBible.ipa",
+      "permissions": []
+    }
+  ],
+  "news": []
+}

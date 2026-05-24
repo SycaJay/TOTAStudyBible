@@ -63,3 +63,4 @@ android/app/google-services.json
 
 # Docs / notes (optional local only)
 *.md
+!ios/cloud-build/README.md

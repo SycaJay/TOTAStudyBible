@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Example export options for flutter build ipa.
+  CI generates ios/signing/ExportOptions.plist from secrets (see ios/cloud-build/README.md).
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>ad-hoc</string>
+	<key>teamID</key>
+	<string>YOUR_APPLE_TEAM_ID</string>
+	<key>uploadSymbols</key>
+	<false/>
+	<key>compileBitcode</key>
+	<false/>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.example.njbibleapp</key>
+		<string>YOUR_PROVISIONING_PROFILE_NAME</string>
+	</dict>
+</dict>
+</plist>
