@@ -1,7 +1,8 @@
-# Builds a signed Flutter iOS IPA, publishes a GitHub Release artifact,
-# and updates AltStore source JSON committed to this repository.
+# Builds an UNSIGNED iOS IPA for AltStore sideloading (free Apple ID).
+# AltStore re-signs the app on the user's iPhone with their own Apple ID via AltServer.
+# No paid Apple Developer Program or CI signing secrets required.
 #
-# Required secrets: see ios/cloud-build/README.md
+# App secrets: FIREBASE_OPTIONS_DART (same as Android CI). See ios/cloud-build/README.md
 name: Build iOS IPA (AltStore)
 
 on:
@@ -16,8 +17,6 @@ concurrency:
 env:
   IOS_BUNDLE_ID: com.example.njbibleapp
   IPA_FILENAME: TOTAStudyBible.ipa
-  # ad-hoc | development | release-testing (must match your provisioning profile)
-  IOS_EXPORT_METHOD: ad-hoc
 
 permissions:
   contents: write
@@ -57,21 +56,6 @@ jobs:
           echo "build=$BUILD" >> "$GITHUB_OUTPUT"
           echo "App version: $VERSION ($BUILD)"
 
-      - name: Verify iOS signing secrets
-        env:
-          IOS_P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
-          IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
-          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
-          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
-          IOS_PROVISIONING_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
-        run: |
-          set -euo pipefail
-          test -n "$IOS_P12_BASE64" || { echo "::error::Missing IOS_P12_BASE64"; exit 1; }
-          test -n "$IOS_P12_PASSWORD" || { echo "::error::Missing IOS_P12_PASSWORD"; exit 1; }
-          test -n "$IOS_PROVISION_PROFILE_BASE64" || { echo "::error::Missing IOS_PROVISION_PROFILE_BASE64"; exit 1; }
-          test -n "$IOS_TEAM_ID" || { echo "::error::Missing IOS_TEAM_ID"; exit 1; }
-          test -n "$IOS_PROVISIONING_PROFILE_NAME" || { echo "::error::Missing IOS_PROVISIONING_PROFILE_NAME"; exit 1; }
-
       - name: Restore Firebase and local config from secrets
         env:
           FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
@@ -93,42 +77,13 @@ jobs:
             exit 1
           fi
 
-      - name: Import Apple distribution certificate
-        uses: apple-actions/import-codesign-certs@v3
-        with:
-          p12-file-base64: ${{ secrets.IOS_P12_BASE64 }}
-          p12-password: ${{ secrets.IOS_P12_PASSWORD }}
-
-      - name: Install provisioning profile
-        env:
-          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
-        run: |
-          set -euo pipefail
-          PP_PATH="$RUNNER_TEMP/build_pp.mobileprovision"
-          echo -n "$IOS_PROVISION_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< "$(security cms -D -i "$PP_PATH")")
-          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${UUID}.mobileprovision"
-          echo "Installed provisioning profile UUID: $UUID"
-
-      - name: Generate CI signing config and ExportOptions.plist
-        env:
-          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
-          IOS_PROVISIONING_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
-          IOS_CODE_SIGN_IDENTITY: ${{ secrets.IOS_CODE_SIGN_IDENTITY }}
-          IOS_EXPORT_METHOD: ${{ env.IOS_EXPORT_METHOD }}
-        run: |
-          set -euo pipefail
-          chmod +x .github/scripts/ios-generate-*.sh
-          .github/scripts/ios-generate-ci-signing-xcconfig.sh
-          .github/scripts/ios-generate-export-options.sh
-
-      - name: Build signed IPA
+      # Unsigned IPA: AltStore signs on the device with the user's free Apple ID.
+      - name: Build unsigned IPA for AltStore
         env:
           API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
         run: |
           set -euo pipefail
-          ARGS=(build ipa --release --export-options-plist=ios/signing/ExportOptions.plist)
+          ARGS=(build ipa --release --no-codesign)
           if [ -n "${API_BIBLE_KEY:-}" ]; then
             ARGS+=(--dart-define=API_BIBLE_KEY="$API_BIBLE_KEY")
           fi
@@ -157,16 +112,17 @@ jobs:
           tag_name: ios-v${{ steps.app_version.outputs.version }}-${{ github.run_number }}
           name: iOS v${{ steps.app_version.outputs.version }} (${{ steps.app_version.outputs.build }})
           body: |
-            Signed **TOTA Study Bible** IPA for AltStore sideloading.
+            **Unsigned** TOTA Study Bible IPA for AltStore.
+
+            Install with [AltStore](https://altstore.io) + AltServer. AltStore re-signs the app on your device using **your free Apple ID** (7-day refresh applies).
 
             - Version: `${{ steps.app_version.outputs.version }}`
             - Build: `${{ steps.app_version.outputs.build }}`
             - Bundle ID: `${{ env.IOS_BUNDLE_ID }}`
-            - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            Add AltStore source URL:
+            AltStore source:
             `https://raw.githubusercontent.com/${{ github.repository }}/main/ios/altstore/altstore-source.json`
-          files: dist/ios/${{ env.IPA_FILENAME }}
+          files: dist/ios/TOTAStudyBible.ipa
           fail_on_unmatched_files: true
 
       - name: Update AltStore manifest JSON in repo
